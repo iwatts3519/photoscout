@@ -15,7 +15,12 @@
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
       "Bash(git add:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: complete phase 1 and 2 - project foundation and database setup\n\nPhase 1 \\(Foundation & Setup\\):\n- Initialize Next.js 14+ with TypeScript and Tailwind CSS\n- Install core dependencies \\(MapLibre, SunCalc, Zustand, etc.\\)\n- Set up shadcn/ui components\n- Configure Vitest for testing\n- Create project directory structure\n- Validation: typecheck, lint, test, dev server all working\n\nPhase 2 \\(Database Setup\\):\n- Initialize local Supabase with PostGIS\n- Create database schema \\(profiles, locations, weather_alerts\\)\n- Set up RLS policies for security\n- Create PostGIS functions for spatial queries\n- Generate TypeScript types from database schema\n- Create Supabase client configurations \\(browser & server\\)\n- Add database query functions for locations\n\nGit Setup:\n- Add comprehensive git workflow to CLAUDE.md\n- Configure repository with GitHub remote\n- Set up .gitignore for Next.js, Supabase, and IDEs\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout 10 bash -c 'while [ ! -f \"\"C:\\\\Users\\\\iwatt\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Cursor-photoscout\\\\tasks\\\\b9ff105.output\"\" ]; do sleep 0.5; done; cat \"\"C:\\\\Users\\\\iwatt\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Cursor-photoscout\\\\tasks\\\\b9ff105.output\"\"')"
     ]
   }
 }
