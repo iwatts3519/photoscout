@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { toast } from 'sonner';
 import { useMapStore } from '@/src/stores/mapStore';
 import { useGeolocation } from '@/src/hooks/useGeolocation';
 import { MapControls } from './MapControls';
@@ -141,8 +142,9 @@ export function MapView() {
   // Show geolocation error
   useEffect(() => {
     if (geoError) {
-      console.error('Geolocation error:', geoError);
-      // TODO: Show error in UI toast/notification
+      toast.error('Location access denied', {
+        description: 'Please enable location access in your browser to use this feature.',
+      });
     }
   }, [geoError]);
 
