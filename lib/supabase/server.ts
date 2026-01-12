@@ -1,20 +1,38 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { z } from 'zod';
 import type { Database } from '@/src/types/database';
 
-export const createClient = async () => {
-  const cookieStore = await cookies();
+// Validate environment variables with Zod
+const envSchema = z.object({
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url('Invalid Supabase URL format'),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anon key is required'),
+});
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+function validateEnv() {
+  const result = envSchema.safeParse({
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  });
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!result.success) {
+    const errors = result.error.flatten().fieldErrors;
+    const errorMessages = Object.entries(errors)
+      .map(([key, msgs]) => `${key}: ${msgs?.join(', ')}`)
+      .join('\n');
     throw new Error(
-      'Missing Supabase environment variables. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local'
+      `Invalid Supabase environment variables:\n${errorMessages}\n\nPlease check your .env.local file.`
     );
   }
 
-  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return result.data;
+}
+
+export const createClient = async () => {
+  const cookieStore = await cookies();
+  const env = validateEnv();
+
+  return createServerClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value;

@@ -132,8 +132,8 @@ export async function getWeatherForecast(
  * Transform Open-Meteo API response to our WeatherForecast format
  */
 function transformOpenMeteoResponse(response: OpenMeteoResponse): WeatherForecast {
-  // Transform current conditions
-  const current = transformCurrentConditions(response.current);
+  // Transform current conditions (use first hourly visibility as current)
+  const current = transformCurrentConditions(response.current, response.hourly);
 
   // Transform hourly forecast (next 24 hours)
   const hourly: WeatherConditions[] = [];
@@ -170,20 +170,23 @@ function transformOpenMeteoResponse(response: OpenMeteoResponse): WeatherForecas
  * Transform current conditions from Open-Meteo format
  */
 function transformCurrentConditions(
-  current: OpenMeteoResponse['current']
+  current: OpenMeteoResponse['current'],
+  hourly: OpenMeteoResponse['hourly']
 ): WeatherConditions {
   return {
     temperature: current.temperature_2m,
     feelsLike: current.apparent_temperature,
     cloudCover: current.cloud_cover,
-    visibility: 10000, // Open-Meteo doesn't provide current visibility, use default
+    // Use first hourly visibility as current (Open-Meteo doesn't provide current visibility)
+    visibility: hourly.visibility?.[0] ?? 10000,
     windSpeed: current.wind_speed_10m,
     windGust: current.wind_gusts_10m,
     windDirection: current.wind_direction_10m,
     precipitation: current.precipitation,
     humidity: current.relative_humidity_2m,
     pressure: current.pressure_msl,
-    uvIndex: 0, // UV not provided in current, only hourly
+    // Use first hourly UV index as current (Open-Meteo doesn't provide current UV)
+    uvIndex: hourly.uv_index?.[0] ?? 0,
     weatherType: mapWMOCodeToWeatherType(current.weather_code),
     timestamp: current.time,
   };
