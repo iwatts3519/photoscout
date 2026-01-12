@@ -8,7 +8,7 @@ Web app helping UK landscape photographers discover locations, check weather con
 - **Maps**: MapLibre GL JS + OpenStreetMap tiles
 - **Database**: Supabase (PostgreSQL + PostGIS)
 - **Auth**: Supabase Auth
-- **APIs**: Met Office DataPoint (weather), Overpass (POI), Wikimedia Commons (photos)
+- **APIs**: Open-Meteo (weather), Overpass (POI), Wikimedia Commons (photos)
 - **Sun/Moon**: SunCalc.js (client-side)
 - **Deployment**: Vercel (Hobby plan)
 
@@ -131,7 +131,7 @@ src/
 ## API Rate Limits
 | API | Limit | Strategy |
 |-----|-------|----------|
-| Met Office | 5000/day, 100/min | Cache 30min |
+| Open-Meteo | No key required, unlimited non-commercial | Cache 30min |
 | Overpass | Be respectful | Cache 24hr |
 | Wikimedia | Generous | Cache 1hr |
 
@@ -156,9 +156,10 @@ const times = SunCalc.getTimes(new Date(), lat, lng);
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-MET_OFFICE_API_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+**Note**: Open-Meteo requires no API key for non-commercial use.
 
 ## Important Reminders
 1. **ALWAYS typecheck** after code changes
@@ -169,7 +170,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 6. **Attribution required** for Wikimedia photos and OpenStreetMap
 
 ## Common Gotchas
-- Met Office returns temps in Celsius, wind in mph
+- Open-Meteo returns temps in Celsius, wind in km/h (convert to mph: `km/h * 0.621371`)
+- Open-Meteo uses WMO weather codes (0-99) - map to descriptive text
 - SunCalc azimuths are radians - convert: `(azimuth * 180 / Math.PI) + 180`
 - Supabase PostGIS needs `::geography` casting for distance accuracy
 - Overpass API can be slow - use timeouts and loading states
