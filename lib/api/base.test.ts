@@ -2,17 +2,15 @@
  * Tests for base API utility functions
  */
 
-import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { server } from '@/src/mocks/server';
 import { http, HttpResponse, delay } from 'msw';
 import { fetchAPI, buildURL, clearCache, APIError } from './base';
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+// Note: MSW server is already set up globally in src/setupTests.ts
 afterEach(() => {
-  server.resetHandlers();
   clearCache();
 });
-afterAll(() => server.close());
 
 describe('buildURL', () => {
   it('should build URL with query parameters', () => {
@@ -88,7 +86,6 @@ describe('fetchAPI', () => {
   });
 
   it('should not retry on 4xx errors', async () => {
-    clearCache(); // Ensure no cached response
     let attempts = 0;
 
     server.use(
@@ -106,8 +103,6 @@ describe('fetchAPI', () => {
   });
 
   it('should handle timeout', async () => {
-    clearCache(); // Ensure no cached response
-
     server.use(
       http.get(testUrl, async () => {
         await delay(2000); // 2 second delay
@@ -121,7 +116,6 @@ describe('fetchAPI', () => {
   }, 10000); // Increase test timeout to 10 seconds
 
   it('should cache responses when enabled', async () => {
-    clearCache(); // Start with clean cache
     let callCount = 0;
 
     server.use(
@@ -142,7 +136,6 @@ describe('fetchAPI', () => {
   });
 
   it('should not cache when cache is disabled', async () => {
-    clearCache(); // Start with clean cache
     let callCount = 0;
 
     server.use(
@@ -179,7 +172,6 @@ describe('clearCache', () => {
   const testUrl = 'https://api.test.com/cached';
 
   it('should clear specific cache entry', async () => {
-    clearCache(); // Start with clean cache
     let callCount = 0;
 
     server.use(
@@ -202,7 +194,6 @@ describe('clearCache', () => {
   });
 
   it('should clear all cache entries', async () => {
-    clearCache(); // Start with clean cache
     const url1 = 'https://api.test.com/data1';
     const url2 = 'https://api.test.com/data2';
     let callCount = 0;

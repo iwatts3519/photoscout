@@ -10,24 +10,26 @@
 
 PhotoScout is a location planning tool designed specifically for landscape photographers in the UK. Select any location on an interactive map, and PhotoScout provides:
 
-- **Sun & Golden Hour Calculations** - Precise sunrise, sunset, and golden hour times
-- **Weather Forecasts** - Real-time weather conditions from the Met Office
-- **Photography Scores** - Smart scoring based on light quality, weather, and time of day
-- **Nearby Photo Discovery** - Find geotagged photos from Wikimedia Commons
-- **Points of Interest** - Locate parking, cafes, and amenities near your shoot location
+- **Sun & Golden Hour Calculations** ✅ - Precise sunrise, sunset, and golden hour times
+- **Weather Forecasts** ✅ - Real-time weather conditions from Open-Meteo API
+- **Photography Scores** ✅ - Smart scoring based on light quality, weather, and time of day
+- **Nearby Photo Discovery** 🔮 - Find geotagged photos from Wikimedia Commons (planned)
+- **Points of Interest** 🔮 - Locate parking, cafes, and amenities near your shoot location (planned)
 
 Whether you're planning a sunrise shoot in the Lake District or scouting coastal locations in Cornwall, PhotoScout helps you make the most of the light.
 
 ## Current Status
 
-**MVP Development - Phase 2 Complete** ✅
+**MVP Development - Phase 6 (Final Polish)** 🎨
 
 - ✅ **Phase 1**: Project foundation with Next.js, TypeScript, and Tailwind CSS
 - ✅ **Phase 2**: Local Supabase database with PostGIS for spatial queries
-- 🚧 **Phase 3**: Core map interface (in progress)
-- 📋 **Phase 4-6**: Photography conditions, weather integration, and polish
+- ✅ **Phase 3**: Core map interface with interactive location selection
+- ✅ **Phase 4**: Photography conditions and sun calculations
+- ✅ **Phase 5**: Real-time weather integration with Open-Meteo API
+- 🚧 **Phase 6**: Final polish, testing, and documentation (in progress)
 
-See [PLAN.md](PLAN.md) for detailed roadmap and progress tracking.
+All core MVP features are complete! See [PLAN.md](PLAN.md) for detailed roadmap and progress tracking.
 
 ## Key Features
 
@@ -56,10 +58,10 @@ See [PLAN.md](PLAN.md) for detailed roadmap and progress tracking.
 | **Maps** | MapLibre GL JS, OpenStreetMap tiles |
 | **Database** | Supabase (PostgreSQL + PostGIS) |
 | **Authentication** | Supabase Auth |
-| **APIs** | Met Office DataPoint, Overpass, Wikimedia Commons |
+| **APIs** | Open-Meteo (weather), Overpass (POI), Wikimedia Commons (photos) |
 | **Sun Calculations** | SunCalc.js |
 | **State Management** | Zustand |
-| **Testing** | Vitest, React Testing Library |
+| **Testing** | Vitest, React Testing Library, MSW (API mocking) |
 | **Deployment** | Vercel (planned) |
 
 ## Getting Started
@@ -212,7 +214,7 @@ PostGIS enables efficient geospatial queries:
 
 | API | Limit | Caching Strategy |
 |-----|-------|------------------|
-| Met Office | 5000/day, 100/min | Cache 30 minutes |
+| Open-Meteo | No key required, unlimited non-commercial | Cache 30 minutes |
 | Overpass | Be respectful | Cache 24 hours |
 | Wikimedia Commons | Generous | Cache 1 hour |
 
@@ -240,7 +242,7 @@ MIT License - See [LICENSE](LICENSE) file for details
 - **MapLibre GL JS** - Open-source mapping library
 - **Supabase** - Database and authentication platform
 - **shadcn/ui** - Beautiful UI components
-- **Met Office** - UK weather data provider
+- **Open-Meteo** - Free weather API for non-commercial use
 - **SunCalc** - Sun position calculations
 
 ## Links
