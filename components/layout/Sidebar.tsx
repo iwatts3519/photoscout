@@ -1,14 +1,54 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useMapStore } from '@/src/stores/mapStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { MapPin } from 'lucide-react';
+import { MapPin, Loader2, AlertCircle } from 'lucide-react';
+import { WeatherCard } from '@/components/weather/WeatherCard';
+import { ConditionsScore } from '@/components/weather/ConditionsScore';
+import { SunTimesCard } from '@/components/weather/SunTimesCard';
+import { fetchCurrentWeather } from '@/app/actions/weather';
+import { adaptWeatherForPhotography } from '@/lib/utils/weather-adapter';
+import type { WeatherConditions as MetOfficeWeather } from '@/src/types/weather.types';
 
 export function Sidebar() {
   const { selectedLocation, radius, setRadius } = useMapStore();
+  const [weather, setWeather] = useState<MetOfficeWeather | null>(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+
+  // Fetch weather data when location changes
+  useEffect(() => {
+    if (!selectedLocation) {
+      setWeather(null);
+      setWeatherError(null);
+      return;
+    }
+
+    const fetchWeather = async () => {
+      setIsLoadingWeather(true);
+      setWeatherError(null);
+
+      const result = await fetchCurrentWeather(
+        selectedLocation.lat,
+        selectedLocation.lng
+      );
+
+      if (result.error) {
+        setWeatherError(result.error);
+        setWeather(null);
+      } else {
+        setWeather(result.data);
+      }
+
+      setIsLoadingWeather(false);
+    };
+
+    fetchWeather();
+  }, [selectedLocation]);
 
   const formatCoordinate = (value: number, decimals: number = 6): string => {
     return value.toFixed(decimals);
@@ -104,6 +144,59 @@ export function Sidebar() {
                 <p className="text-xs text-muted-foreground">
                   Saving locations will be available in a future update
                 </p>
+              </div>
+
+              {/* Weather and Photography Conditions */}
+              <div className="space-y-4 pt-4">
+                {/* Loading State */}
+                {isLoadingWeather && (
+                  <Card>
+                    <CardContent className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        Loading weather data...
+                      </span>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Error State */}
+                {weatherError && !isLoadingWeather && (
+                  <Card className="border-destructive">
+                    <CardContent className="flex items-start gap-2 py-4">
+                      <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-destructive">
+                          Failed to load weather
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {weatherError}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Weather and Conditions Cards */}
+                {weather && !isLoadingWeather && (
+                  <>
+                    {/* Sun Times */}
+                    <SunTimesCard
+                      lat={selectedLocation.lat}
+                      lng={selectedLocation.lng}
+                    />
+
+                    {/* Weather Conditions */}
+                    <WeatherCard weather={weather} />
+
+                    {/* Photography Score */}
+                    <ConditionsScore
+                      lat={selectedLocation.lat}
+                      lng={selectedLocation.lng}
+                      weather={adaptWeatherForPhotography(weather)}
+                    />
+                  </>
+                )}
               </div>
             </>
           ) : (
