@@ -34,6 +34,7 @@ export function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
+  const zoomRef = useRef<number>(12);
 
   const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null);
 
@@ -48,6 +49,11 @@ export function MapView() {
   } = useMapStore();
 
   const { location: userLocation, loading: isLocating, getLocation, error: geoError } = useGeolocation();
+
+  // Keep zoomRef in sync with zoom state
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
 
   // Initialize map
   useEffect(() => {
@@ -124,13 +130,14 @@ export function MapView() {
       });
 
       // Fly to selected location
+      // Use zoomRef to access current zoom without triggering re-renders
       map.current.flyTo({
         center: [selectedLocation.lng, selectedLocation.lat],
-        zoom: Math.max(zoom, 12),
+        zoom: Math.max(zoomRef.current, 12),
         duration: 1000,
       });
     }
-  }, [selectedLocation, setSelectedLocation]); // Removed zoom from deps to prevent re-centering on zoom changes
+  }, [selectedLocation, setSelectedLocation]);
 
   // Handle user location
   useEffect(() => {
