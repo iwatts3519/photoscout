@@ -20,7 +20,17 @@
       "Bash(git push:*)",
       "Bash(git commit:*)",
       "Bash(npm run dev:*)",
-      "Bash(timeout 10 bash -c 'while [ ! -f \"\"C:\\\\Users\\\\iwatt\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Cursor-photoscout\\\\tasks\\\\b9ff105.output\"\" ]; do sleep 0.5; done; cat \"\"C:\\\\Users\\\\iwatt\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Cursor-photoscout\\\\tasks\\\\b9ff105.output\"\"')"
+      "Bash(timeout 10 bash -c 'while [ ! -f \"\"C:\\\\Users\\\\iwatt\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Cursor-photoscout\\\\tasks\\\\b9ff105.output\"\" ]; do sleep 0.5; done; cat \"\"C:\\\\Users\\\\iwatt\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--Cursor-photoscout\\\\tasks\\\\b9ff105.output\"\"')",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "WebSearch",
+      "Bash(npm run build:*)",
+      "Bash(taskkill:*)",
+      "Bash(ls:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(git reset:*)",
+      "Bash(find:*)"
     ]
   }
 }

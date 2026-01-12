@@ -133,16 +133,16 @@ export function Sidebar() {
                 </div>
               </div>
 
-              {/* Location Name (for future saving) */}
+              {/* Location Save Placeholder (Phase 7B) */}
               <div className="space-y-2">
-                <Label htmlFor="location-name">Location Name</Label>
-                <Input
-                  id="location-name"
-                  placeholder="e.g., Lake District viewpoint"
-                  disabled
-                />
+                <Label htmlFor="location-name">Save Location</Label>
+                <div className="p-4 rounded-lg bg-muted border-2 border-dashed border-muted-foreground/25">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Sign in to save your favorite photography locations
+                  </p>
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  Saving locations will be available in a future update
+                  Location saving available after authentication
                 </p>
               </div>
 

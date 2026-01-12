@@ -10,9 +10,10 @@
 | **Phase 4: Photography Conditions** | ✅ Complete | 100% |
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
+| **Phase 7: High Priority Core Features** | 🔄 In Progress | 25% |
 
 **Last Updated**: 2026-01-12
-**Current Phase**: 🎉 MVP Complete - All Phases Finished!
+**Current Phase**: Phase 7A Complete - Authentication & User Management ✅
 
 ---
 
@@ -609,16 +610,134 @@ npm run typecheck && npm run lint && npm run test
 
 ---
 
+## 🔄 Phase 7: High Priority Core Features (IN PROGRESS)
+
+### Goal
+Implement critical user-facing features: authentication, location saving, photo discovery, and POI integration.
+
+### Sub-Phases
+
+#### Phase 7A: Authentication & User Management (✅ COMPLETED)
+**Goal**: Enable passwordless authentication via magic link
+
+**Tasks**:
+- [x] Create auth context and hooks (`AuthContext`, `useAuth`, `useUser`)
+- [x] Build auth UI components (`AuthDialog`, `UserMenu`)
+- [x] Create auth API layer (`lib/queries/profiles.ts`, `app/actions/auth.ts`)
+- [x] Set up magic link callback route (`app/auth/callback/route.ts`)
+- [x] Integrate auth into app layout and components
+- [x] Add sign-in/sign-out functionality
+- [x] Test authentication flow
+
+**Files Created**: 8 new files
+- `src/contexts/AuthContext.tsx` - Auth provider with Supabase integration
+- `src/hooks/useAuth.ts` - Auth state hook
+- `src/hooks/useUser.ts` - User profile hook
+- `components/auth/AuthDialog.tsx` - Magic link login dialog
+- `components/auth/UserMenu.tsx` - User dropdown menu
+- `lib/queries/profiles.ts` - Profile database queries
+- `app/actions/auth.ts` - Auth server actions
+- `app/auth/callback/route.ts` - Magic link callback handler
+
+**Files Modified**: 3 files
+- `app/layout.tsx` - Added AuthProvider wrapper
+- `components/layout/AppShell.tsx` - Added UserMenu and Sign In button
+- `components/layout/Sidebar.tsx` - Added auth messaging
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167 passing)
+
+#### Phase 7B: Location Saving (PENDING)
+**Goal**: Allow authenticated users to save, edit, and delete photography locations
+
+**Tasks**:
+- [ ] Create location store (`src/stores/locationStore.ts`)
+- [ ] Build location UI components (`SaveLocationButton`, `LocationForm`, `SavedLocationsList`, `SavedLocationMarker`)
+- [ ] Create location server actions (`app/actions/locations.ts`)
+- [ ] Add delete/update functions to `lib/queries/locations.ts`
+- [ ] Integrate saved locations into sidebar and map
+- [ ] Test location CRUD operations
+
+**Files to Create**: 6 new files
+**Files to Modify**: 3 files (`lib/queries/locations.ts`, `components/layout/Sidebar.tsx`, `components/map/MapView.tsx`)
+
+#### Phase 7C: Wikimedia Commons Photo Discovery (PENDING)
+**Goal**: Fetch and display nearby geotagged photos from Wikimedia Commons
+
+**Tasks**:
+- [ ] Create Wikimedia API types (`src/types/wikimedia.types.ts`)
+- [ ] Build Wikimedia API client (`lib/api/wikimedia.ts`)
+- [ ] Create server action (`app/actions/wikimedia.ts`)
+- [ ] Build photo gallery UI (`PhotoGallery`, `PhotoDialog`, `PhotoThumbnail`)
+- [ ] Integrate photo gallery into sidebar
+- [ ] Add Wikimedia API mocks for testing
+- [ ] Test photo discovery flow
+
+**API**: `https://commons.wikimedia.org/w/api.php` (geosearch, 1-hour cache)
+
+**Files to Create**: 6 new files
+**Files to Modify**: 2 files (`components/layout/Sidebar.tsx`, `src/mocks/handlers.ts`)
+
+#### Phase 7D: Overpass POI Integration (PENDING)
+**Goal**: Display nearby points of interest (parking, cafes, viewpoints) on the map
+
+**Tasks**:
+- [ ] Create Overpass API types (`src/types/overpass.types.ts`)
+- [ ] Build Overpass API client (`lib/api/overpass.ts`)
+- [ ] Create server action (`app/actions/overpass.ts`)
+- [ ] Create POI store (`src/stores/poiStore.ts`)
+- [ ] Build POI UI components (`POILayer`, `POIFilters`, `POIList`)
+- [ ] Integrate POI layer into map
+- [ ] Add Overpass API mocks for testing
+- [ ] Test POI display and filtering
+
+**API**: `https://overpass-api.de/api/interpreter` (Overpass QL, 24-hour cache)
+
+**POI Types**: Parking, Cafes, Viewpoints, Toilets, Information
+
+**Files to Create**: 7 new files
+**Files to Modify**: 3 files (`components/layout/Sidebar.tsx`, `components/map/MapView.tsx`, `src/mocks/handlers.ts`)
+
+### Implementation Order
+```
+Phase 7A (Auth) → Phase 7B (Locations) → Phase 7C & 7D (Photos + POIs in parallel)
+```
+
+### Validation Steps
+After each sub-phase:
+```bash
+npm run typecheck && npm run lint && npm run test
+```
+
+### Critical Dependencies
+- Phase 7B requires 7A (authentication)
+- Phase 7C and 7D are independent, can be done in parallel
+
+### Estimated Effort
+- Phase 7A: 2-3 days
+- Phase 7B: 2 days
+- Phase 7C: 1.5-2 days
+- Phase 7D: 1.5-2 days
+- **Total**: 7-9 days
+
+### Success Criteria
+- ✅ Users can sign in with magic link
+- ✅ Users can save/edit/delete locations
+- ✅ Saved locations appear on map with markers
+- ✅ Nearby photos from Wikimedia Commons display in sidebar
+- ✅ POIs (parking, cafes, viewpoints) show on map
+- ✅ All new features work on mobile
+- ✅ All tests pass with new features
+
+**Detailed Plan**: `C:\Users\iwatt\.claude\plans\polymorphic-cooking-stearns.md`
+
+---
+
 ## 🚀 Post-MVP Enhancements (Future Work)
 
-- User authentication and location saving
-- Wikimedia Commons photo discovery for finding nearby geotagged photos
-- Overpass POI integration (parking, cafes, viewpoints)
 - Weather alerts and push notifications
 - Multi-day weather forecasts
 - Community photo spots and sharing
 - Photo upload and location tagging
-- Favorite locations and trip planning
 - Deployment to Vercel
 
 ---
