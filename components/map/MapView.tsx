@@ -130,7 +130,7 @@ export function MapView() {
         duration: 1000,
       });
     }
-  }, [selectedLocation, setSelectedLocation, zoom]);
+  }, [selectedLocation, setSelectedLocation]); // Removed zoom from deps to prevent re-centering on zoom changes
 
   // Handle user location
   useEffect(() => {
@@ -156,6 +156,7 @@ export function MapView() {
         map={mapInstance}
         onLocateClick={getLocation}
         isLocating={isLocating}
+        selectedLocation={selectedLocation}
       />
 
       <RadiusOverlay
