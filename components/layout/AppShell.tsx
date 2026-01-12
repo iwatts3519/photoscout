@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
@@ -39,6 +39,10 @@ export function AppShell({ children }: AppShellProps) {
             </SheetTrigger>
 
             <SheetContent side="left" className="p-0 w-full sm:w-96">
+              <SheetTitle className="sr-only">Location Details</SheetTitle>
+              <SheetDescription className="sr-only">
+                View and adjust location details, weather conditions, and photography scores
+              </SheetDescription>
               <Sidebar />
             </SheetContent>
           </Sheet>
