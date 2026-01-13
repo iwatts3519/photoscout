@@ -10,10 +10,10 @@
 | **Phase 4: Photography Conditions** | ✅ Complete | 100% |
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
-| **Phase 7: High Priority Core Features** | 🔄 In Progress | 25% |
+| **Phase 7: High Priority Core Features** | 🔄 In Progress | 50% |
 
-**Last Updated**: 2026-01-12
-**Current Phase**: Phase 7A Complete - Authentication & User Management ✅
+**Last Updated**: 2026-01-13
+**Current Phase**: Phase 7B Complete - Location Saving ✅
 
 ---
 
@@ -646,19 +646,36 @@ Implement critical user-facing features: authentication, location saving, photo 
 
 **Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167 passing)
 
-#### Phase 7B: Location Saving (PENDING)
+#### Phase 7B: Location Saving (✅ COMPLETED)
 **Goal**: Allow authenticated users to save, edit, and delete photography locations
 
 **Tasks**:
-- [ ] Create location store (`src/stores/locationStore.ts`)
-- [ ] Build location UI components (`SaveLocationButton`, `LocationForm`, `SavedLocationsList`, `SavedLocationMarker`)
-- [ ] Create location server actions (`app/actions/locations.ts`)
-- [ ] Add delete/update functions to `lib/queries/locations.ts`
-- [ ] Integrate saved locations into sidebar and map
-- [ ] Test location CRUD operations
+- [x] Create location store (`src/stores/locationStore.ts`)
+- [x] Build location UI components (`SaveLocationForm`, `EditLocationForm`, `LocationCard`, `SavedLocationsList`, `SavedLocationMarkers`)
+- [x] Create location server actions (`app/actions/locations.ts`)
+- [x] Add delete/update functions to `lib/queries/locations.ts`)
+- [x] Create PostGIS function to extract lat/lng from geography
+- [x] Integrate saved locations into sidebar and map
+- [x] Test location CRUD operations
 
-**Files to Create**: 6 new files
-**Files to Modify**: 3 files (`lib/queries/locations.ts`, `components/layout/Sidebar.tsx`, `components/map/MapView.tsx`)
+**Files Created**: 9 new files
+- `src/stores/locationStore.ts` - Zustand store for saved locations
+- `app/actions/locations.ts` - Server actions with Zod validation
+- `components/locations/SaveLocationForm.tsx` - Save current location form
+- `components/locations/EditLocationForm.tsx` - Edit existing location
+- `components/locations/LocationCard.tsx` - Display individual location
+- `components/locations/SavedLocationsList.tsx` - List all saved locations
+- `components/map/SavedLocationMarkers.tsx` - Green markers on map
+- `components/auth/DevPasswordSignIn.tsx` - Dev-only password auth
+- `supabase/migrations/20260113000001_add_get_locations_with_coords.sql` - PostGIS function
+
+**Files Modified**: 4 files
+- `lib/queries/locations.ts` - Added updateLocation, deleteLocation, getLocationById, coordinate parsing
+- `components/layout/Sidebar.tsx` - Integrated SaveLocationForm and SavedLocationsList
+- `components/map/MapView.tsx` - Added SavedLocationMarkers component
+- `supabase/config.toml` - Fixed invalid config
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167 passing) | ✅ build
 
 #### Phase 7C: Wikimedia Commons Photo Discovery (PENDING)
 **Goal**: Fetch and display nearby geotagged photos from Wikimedia Commons

@@ -5,9 +5,11 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { toast } from 'sonner';
 import { useMapStore } from '@/src/stores/mapStore';
+import { useLocationStore } from '@/src/stores/locationStore';
 import { useGeolocation } from '@/src/hooks/useGeolocation';
 import { MapControls } from './MapControls';
 import { RadiusOverlay } from './RadiusOverlay';
+import { SavedLocationMarkers } from './SavedLocationMarkers';
 
 const MAP_STYLE = {
   version: 8,
@@ -47,6 +49,8 @@ export function MapView() {
     setCenter,
     setZoom
   } = useMapStore();
+
+  const savedLocations = useLocationStore((state) => state.savedLocations);
 
   const { location: userLocation, loading: isLocating, getLocation, error: geoError } = useGeolocation();
 
@@ -170,6 +174,11 @@ export function MapView() {
         map={mapInstance}
         location={selectedLocation}
         radiusMeters={radius}
+      />
+
+      <SavedLocationMarkers
+        map={mapInstance}
+        locations={savedLocations}
       />
     </div>
   );

@@ -460,6 +460,14 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_locations_with_coords: {
+        Args: { location_ids: string[] }
+        Returns: {
+          id: string
+          lat: number
+          lng: number
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       locations_near_point: {
         Args: { lat: number; lng: number; radius_meters: number }

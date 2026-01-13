@@ -10,12 +10,17 @@ import { MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { WeatherCard } from '@/components/weather/WeatherCard';
 import { ConditionsScore } from '@/components/weather/ConditionsScore';
 import { SunTimesCard } from '@/components/weather/SunTimesCard';
+import { SaveLocationForm } from '@/components/locations/SaveLocationForm';
+import { SavedLocationsList } from '@/components/locations/SavedLocationsList';
+import { DevPasswordSignIn } from '@/components/auth/DevPasswordSignIn';
 import { fetchCurrentWeather } from '@/app/actions/weather';
 import { adaptWeatherForPhotography } from '@/lib/utils/weather-adapter';
+import { useAuth } from '@/src/hooks/useAuth';
 import type { WeatherConditions as MetOfficeWeather } from '@/src/types/weather.types';
 
 export function Sidebar() {
   const { selectedLocation, radius, setRadius } = useMapStore();
+  const { user } = useAuth();
   const [weather, setWeather] = useState<MetOfficeWeather | null>(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [weatherError, setWeatherError] = useState<string | null>(null);
@@ -85,6 +90,8 @@ export function Sidebar() {
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Dev Only: Password Sign In */}
+          {!user && <DevPasswordSignIn />}
           {selectedLocation ? (
             <>
               {/* Coordinates Display */}
@@ -133,17 +140,21 @@ export function Sidebar() {
                 </div>
               </div>
 
-              {/* Location Save Placeholder (Phase 7B) */}
+              {/* Save Location Form */}
               <div className="space-y-2">
-                <Label htmlFor="location-name">Save Location</Label>
-                <div className="p-4 rounded-lg bg-muted border-2 border-dashed border-muted-foreground/25">
-                  <p className="text-sm text-muted-foreground text-center">
-                    Sign in to save your favorite photography locations
-                  </p>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Location saving available after authentication
-                </p>
+                <Label>Save Location</Label>
+                {user ? (
+                  <SaveLocationForm
+                    coordinates={selectedLocation}
+                    radius={radius}
+                  />
+                ) : (
+                  <div className="p-4 rounded-lg bg-muted border-2 border-dashed border-muted-foreground/25">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Sign in to save your favorite photography locations
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Weather and Photography Conditions */}
@@ -205,6 +216,13 @@ export function Sidebar() {
               <p className="text-sm text-muted-foreground">
                 Click anywhere on the map to select a location and start planning your shoot
               </p>
+            </div>
+          )}
+
+          {/* Saved Locations List - Always visible when user is signed in */}
+          {user && (
+            <div className="pt-6 mt-6 border-t">
+              <SavedLocationsList />
             </div>
           )}
         </CardContent>
