@@ -12,6 +12,7 @@ import { ConditionsScore } from '@/components/weather/ConditionsScore';
 import { SunTimesCard } from '@/components/weather/SunTimesCard';
 import { SaveLocationForm } from '@/components/locations/SaveLocationForm';
 import { SavedLocationsList } from '@/components/locations/SavedLocationsList';
+import { PhotoGallery } from '@/components/locations/PhotoGallery';
 import { DevPasswordSignIn } from '@/components/auth/DevPasswordSignIn';
 import { fetchCurrentWeather } from '@/app/actions/weather';
 import { adaptWeatherForPhotography } from '@/lib/utils/weather-adapter';
@@ -206,6 +207,24 @@ export function Sidebar() {
                       lng={selectedLocation.lng}
                       weather={adaptWeatherForPhotography(weather)}
                     />
+
+                    {/* Nearby Photos */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base">Nearby Photos</CardTitle>
+                        <CardDescription>
+                          Geotagged photos from Wikimedia Commons
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <PhotoGallery
+                          lat={selectedLocation.lat}
+                          lng={selectedLocation.lng}
+                          radiusMeters={radius}
+                          limit={20}
+                        />
+                      </CardContent>
+                    </Card>
                   </>
                 )}
               </div>

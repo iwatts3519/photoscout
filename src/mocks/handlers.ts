@@ -10,6 +10,11 @@ import { http, HttpResponse, delay } from 'msw';
 const OPEN_METEO_BASE_URL = 'https://api.open-meteo.com/v1/forecast';
 
 /**
+ * Base URL for Wikimedia Commons API
+ */
+const WIKIMEDIA_API_BASE_URL = 'https://commons.wikimedia.org/w/api.php';
+
+/**
  * Generate mock Open-Meteo response
  */
 function generateMockOpenMeteoResponse(lat: number, lon: number) {
@@ -86,6 +91,91 @@ function generateMockOpenMeteoResponse(lat: number, lon: number) {
 }
 
 /**
+ * Generate mock Wikimedia geosearch response
+ */
+function generateMockGeosearchResponse(lat: number, lon: number, radius: number, limit: number) {
+  const results = [];
+  const maxResults = Math.min(limit, 5); // Generate up to 5 mock photos
+
+  for (let i = 0; i < maxResults; i++) {
+    // Random offset within radius (simplified)
+    const offsetLat = (Math.random() - 0.5) * (radius / 111000); // ~111km per degree
+    const offsetLon = (Math.random() - 0.5) * (radius / 111000);
+    const distance = Math.sqrt(offsetLat ** 2 + offsetLon ** 2) * 111000;
+
+    results.push({
+      pageid: 1000000 + i,
+      ns: 6,
+      title: `File:Landscape_Photo_${i + 1}.jpg`,
+      lat: lat + offsetLat,
+      lon: lon + offsetLon,
+      dist: Math.round(distance),
+    });
+  }
+
+  return {
+    batchcomplete: '',
+    query: {
+      geosearch: results,
+    },
+  };
+}
+
+/**
+ * Generate mock Wikimedia imageinfo response
+ */
+function generateMockImageinfoResponse(titles: string) {
+  const titleArray = titles.split('|');
+  const pages: Record<string, unknown> = {};
+
+  titleArray.forEach((title, index) => {
+    const pageid = 1000000 + index;
+    const photoNum = index + 1;
+
+    pages[pageid] = {
+      pageid,
+      ns: 6,
+      title,
+      imagerepository: 'local',
+      imageinfo: [
+        {
+          timestamp: new Date(2024, 0, photoNum).toISOString(),
+          user: `Photographer${photoNum}`,
+          url: `https://upload.wikimedia.org/wikipedia/commons/thumb/a/a${photoNum}/Landscape_Photo_${photoNum}.jpg/1280px-Landscape_Photo_${photoNum}.jpg`,
+          descriptionurl: `https://commons.wikimedia.org/wiki/${encodeURIComponent(title)}`,
+          descriptionshorturl: `https://commons.wikimedia.org/wiki/${encodeURIComponent(title)}`,
+          width: 4000,
+          height: 3000,
+          size: 2500000,
+          thumburl: `https://upload.wikimedia.org/wikipedia/commons/thumb/a/a${photoNum}/Landscape_Photo_${photoNum}.jpg/400px-Landscape_Photo_${photoNum}.jpg`,
+          thumbwidth: 400,
+          thumbheight: 300,
+          extmetadata: {
+            ObjectName: { value: `Landscape Photo ${photoNum}` },
+            ImageDescription: {
+              value: `Beautiful landscape photograph showing stunning scenery at location ${photoNum}`,
+            },
+            Artist: { value: `Test Photographer ${photoNum}` },
+            Credit: { value: 'Own work' },
+            LicenseShortName: { value: 'CC BY-SA 4.0' },
+            UsageTerms: { value: 'Creative Commons Attribution-ShareAlike 4.0' },
+            AttributionRequired: { value: 'true' },
+            Copyrighted: { value: 'True' },
+            DateTime: { value: `2024-01-${String(photoNum).padStart(2, '0')} 12:00:00` },
+            DateTimeOriginal: { value: `2024-01-${String(photoNum).padStart(2, '0')} 12:00:00` },
+          },
+        },
+      ],
+    };
+  });
+
+  return {
+    batchcomplete: '',
+    query: { pages },
+  };
+}
+
+/**
  * API request handlers
  */
 export const handlers = [
@@ -139,5 +229,62 @@ export const handlers = [
     const lat = 51.5074;
     const lon = -0.1278;
     return HttpResponse.json(generateMockOpenMeteoResponse(lat, lon), { status: 200 });
+  }),
+
+  /**
+   * Wikimedia Commons geosearch endpoint
+   * Matches: https://commons.wikimedia.org/w/api.php?action=query&list=geosearch...
+   */
+  http.get(WIKIMEDIA_API_BASE_URL, async ({ request }) => {
+    const url = new URL(request.url);
+    const action = url.searchParams.get('action');
+    const list = url.searchParams.get('list');
+    const prop = url.searchParams.get('prop');
+
+    // Handle geosearch request
+    if (action === 'query' && list === 'geosearch') {
+      const gscoord = url.searchParams.get('gscoord');
+      const gsradius = url.searchParams.get('gsradius');
+      const gslimit = url.searchParams.get('gslimit');
+
+      if (!gscoord || !gsradius) {
+        return HttpResponse.json(
+          { error: { code: 'badparams', info: 'Missing required parameters' } },
+          { status: 400 }
+        );
+      }
+
+      const [lat, lon] = gscoord.split('|').map(parseFloat);
+      const radius = parseInt(gsradius, 10);
+      const limit = parseInt(gslimit || '10', 10);
+
+      // Simulate network delay
+      await delay(200);
+
+      return HttpResponse.json(generateMockGeosearchResponse(lat, lon, radius, limit));
+    }
+
+    // Handle imageinfo request
+    if (action === 'query' && prop === 'imageinfo') {
+      const titles = url.searchParams.get('titles');
+
+      if (!titles) {
+        return HttpResponse.json(
+          { error: { code: 'badparams', info: 'Missing titles parameter' } },
+          { status: 400 }
+        );
+      }
+
+      // Simulate network delay
+      await delay(200);
+
+      return HttpResponse.json(generateMockImageinfoResponse(titles));
+    }
+
+    // Unknown request
+    return HttpResponse.json(
+      { error: { code: 'unknown_action', info: 'Unrecognized API action' } },
+      { status: 400 }
+    );
   }),
 ];

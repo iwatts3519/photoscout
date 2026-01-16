@@ -10,10 +10,10 @@
 | **Phase 4: Photography Conditions** | ✅ Complete | 100% |
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
-| **Phase 7: High Priority Core Features** | 🔄 In Progress | 50% |
+| **Phase 7: High Priority Core Features** | 🔄 In Progress | 75% |
 
-**Last Updated**: 2026-01-13
-**Current Phase**: Phase 7B Complete - Location Saving ✅
+**Last Updated**: 2026-01-16
+**Current Phase**: Phase 7C Complete - Wikimedia Commons Photo Discovery ✅
 
 ---
 
@@ -677,22 +677,33 @@ Implement critical user-facing features: authentication, location saving, photo 
 
 **Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167 passing) | ✅ build
 
-#### Phase 7C: Wikimedia Commons Photo Discovery (PENDING)
+#### Phase 7C: Wikimedia Commons Photo Discovery (✅ COMPLETED)
 **Goal**: Fetch and display nearby geotagged photos from Wikimedia Commons
 
 **Tasks**:
-- [ ] Create Wikimedia API types (`src/types/wikimedia.types.ts`)
-- [ ] Build Wikimedia API client (`lib/api/wikimedia.ts`)
-- [ ] Create server action (`app/actions/wikimedia.ts`)
-- [ ] Build photo gallery UI (`PhotoGallery`, `PhotoDialog`, `PhotoThumbnail`)
-- [ ] Integrate photo gallery into sidebar
-- [ ] Add Wikimedia API mocks for testing
-- [ ] Test photo discovery flow
+- [x] Create Wikimedia API types (`src/types/wikimedia.types.ts`)
+- [x] Build Wikimedia API client (`lib/api/wikimedia.ts`)
+- [x] Create server action (`app/actions/wikimedia.ts`)
+- [x] Build photo gallery UI (`PhotoGallery`, `PhotoDialog`, `PhotoThumbnail`)
+- [x] Integrate photo gallery into sidebar
+- [x] Add Wikimedia API mocks for testing
+- [x] Test photo discovery flow
 
 **API**: `https://commons.wikimedia.org/w/api.php` (geosearch, 1-hour cache)
 
-**Files to Create**: 6 new files
-**Files to Modify**: 2 files (`components/layout/Sidebar.tsx`, `src/mocks/handlers.ts`)
+**Files Created**: 6 new files
+- `src/types/wikimedia.types.ts` - Wikimedia API type definitions
+- `lib/api/wikimedia.ts` - Wikimedia API client with geosearch and imageinfo
+- `app/actions/wikimedia.ts` - Server action for fetching nearby photos
+- `components/locations/PhotoThumbnail.tsx` - Photo thumbnail component
+- `components/locations/PhotoDialog.tsx` - Photo detail dialog
+- `components/locations/PhotoGallery.tsx` - Photo gallery component
+
+**Files Modified**: 2 files
+- `components/layout/Sidebar.tsx` - Added PhotoGallery integration
+- `src/mocks/handlers.ts` - Added Wikimedia API mocks
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167 passing)
 
 #### Phase 7D: Overpass POI Integration (PENDING)
 **Goal**: Display nearby points of interest (parking, cafes, viewpoints) on the map
@@ -741,7 +752,7 @@ npm run typecheck && npm run lint && npm run test
 - ✅ Users can save/edit/delete locations
 - ✅ Saved locations appear on map with markers
 - ✅ Nearby photos from Wikimedia Commons display in sidebar
-- ✅ POIs (parking, cafes, viewpoints) show on map
+- ⏳ POIs (parking, cafes, viewpoints) show on map
 - ✅ All new features work on mobile
 - ✅ All tests pass with new features
 
