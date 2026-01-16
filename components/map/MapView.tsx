@@ -10,6 +10,7 @@ import { useGeolocation } from '@/src/hooks/useGeolocation';
 import { MapControls } from './MapControls';
 import { RadiusOverlay } from './RadiusOverlay';
 import { SavedLocationMarkers } from './SavedLocationMarkers';
+import { POILayer } from './POILayer';
 
 const MAP_STYLE = {
   version: 8,
@@ -47,7 +48,8 @@ export function MapView() {
     radius,
     setSelectedLocation,
     setCenter,
-    setZoom
+    setZoom,
+    setMapInstance: setMapInstanceInStore,
   } = useMapStore();
 
   const savedLocations = useLocationStore((state) => state.savedLocations);
@@ -73,6 +75,7 @@ export function MapView() {
     });
 
     setMapInstance(map.current);
+    setMapInstanceInStore(map.current);
 
     // Handle map click to select location
     map.current.on('click', (e) => {
@@ -180,6 +183,8 @@ export function MapView() {
         map={mapInstance}
         locations={savedLocations}
       />
+
+      <POILayer map={mapInstance} />
     </div>
   );
 }

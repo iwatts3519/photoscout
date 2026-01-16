@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Map } from 'maplibre-gl';
 
 export interface MapLocation {
   lat: number;
@@ -6,6 +7,9 @@ export interface MapLocation {
 }
 
 interface MapState {
+  // Map instance
+  mapInstance: Map | null;
+
   // Selected location on the map
   selectedLocation: MapLocation | null;
 
@@ -20,6 +24,7 @@ interface MapState {
   selectedMarkerId: string | null;
 
   // Actions
+  setMapInstance: (map: Map | null) => void;
   setSelectedLocation: (location: MapLocation | null) => void;
   setCenter: (center: MapLocation) => void;
   setZoom: (zoom: number) => void;
@@ -38,11 +43,14 @@ const DEFAULT_ZOOM = 6;
 const DEFAULT_RADIUS = 1000; // 1km
 
 export const useMapStore = create<MapState>((set) => ({
+  mapInstance: null,
   selectedLocation: null,
   center: DEFAULT_CENTER,
   zoom: DEFAULT_ZOOM,
   radius: DEFAULT_RADIUS,
   selectedMarkerId: null,
+
+  setMapInstance: (map) => set({ mapInstance: map }),
 
   setSelectedLocation: (location) => set({ selectedLocation: location }),
 

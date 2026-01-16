@@ -15,6 +15,11 @@ const OPEN_METEO_BASE_URL = 'https://api.open-meteo.com/v1/forecast';
 const WIKIMEDIA_API_BASE_URL = 'https://commons.wikimedia.org/w/api.php';
 
 /**
+ * Base URL for Overpass API
+ */
+const OVERPASS_API_BASE_URL = 'https://overpass-api.de/api/interpreter';
+
+/**
  * Generate mock Open-Meteo response
  */
 function generateMockOpenMeteoResponse(lat: number, lon: number) {
@@ -176,6 +181,55 @@ function generateMockImageinfoResponse(titles: string) {
 }
 
 /**
+ * Generate mock Overpass API response
+ */
+function generateMockOverpassResponse(lat: number, lon: number, radius: number) {
+  const elements: Array<{
+    type: string;
+    id: number;
+    lat: number;
+    lon: number;
+    tags: { [key: string]: string | undefined };
+  }> = [];
+
+  // Generate mock POIs of different types
+  const poiTypes = [
+    { type: 'node', tags: { amenity: 'parking', name: 'Main Car Park' } },
+    { type: 'node', tags: { amenity: 'parking', name: 'Valley Parking' } },
+    { type: 'node', tags: { amenity: 'cafe', name: 'Mountain View Cafe' } },
+    { type: 'node', tags: { amenity: 'restaurant', name: 'The Peak Restaurant' } },
+    { type: 'node', tags: { tourism: 'viewpoint', name: 'Sunset Point' } },
+    { type: 'node', tags: { tourism: 'viewpoint', name: 'Eagle Rock Lookout' } },
+    { type: 'node', tags: { amenity: 'toilets', name: 'Public Toilets' } },
+    { type: 'node', tags: { tourism: 'information', name: 'Visitor Centre' } },
+  ];
+
+  poiTypes.forEach((poi, index) => {
+    // Random offset within radius (simplified)
+    const offsetLat = (Math.random() - 0.5) * (radius / 111000); // ~111km per degree
+    const offsetLon = (Math.random() - 0.5) * (radius / 111000);
+
+    elements.push({
+      type: poi.type,
+      id: 1000000 + index,
+      lat: lat + offsetLat,
+      lon: lon + offsetLon,
+      tags: poi.tags,
+    });
+  });
+
+  return {
+    version: 0.6,
+    generator: 'Overpass API',
+    osm3s: {
+      timestamp_osm_base: new Date().toISOString(),
+      copyright: 'The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.',
+    },
+    elements,
+  };
+}
+
+/**
  * API request handlers
  */
 export const handlers = [
@@ -286,5 +340,44 @@ export const handlers = [
       { error: { code: 'unknown_action', info: 'Unrecognized API action' } },
       { status: 400 }
     );
+  }),
+
+  /**
+   * Overpass API endpoint
+   * Matches: https://overpass-api.de/api/interpreter
+   */
+  http.post(OVERPASS_API_BASE_URL, async ({ request }) => {
+    // Parse the request body (Overpass QL query)
+    const body = await request.text();
+    const queryMatch = body.match(/data=(.+)/);
+
+    if (!queryMatch) {
+      return HttpResponse.json(
+        { remark: 'Missing query data' },
+        { status: 400 }
+      );
+    }
+
+    const query = decodeURIComponent(queryMatch[1]);
+
+    // Extract coordinates and radius from query
+    // Format: (around:RADIUS,LAT,LNG)
+    const aroundMatch = query.match(/around:(\d+),([\d.-]+),([\d.-]+)/);
+
+    if (!aroundMatch) {
+      return HttpResponse.json(
+        { remark: 'Invalid query format' },
+        { status: 400 }
+      );
+    }
+
+    const radius = parseInt(aroundMatch[1], 10);
+    const lat = parseFloat(aroundMatch[2]);
+    const lon = parseFloat(aroundMatch[3]);
+
+    // Simulate network delay
+    await delay(500);
+
+    return HttpResponse.json(generateMockOverpassResponse(lat, lon, radius));
   }),
 ];

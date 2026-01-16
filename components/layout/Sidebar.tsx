@@ -13,6 +13,8 @@ import { SunTimesCard } from '@/components/weather/SunTimesCard';
 import { SaveLocationForm } from '@/components/locations/SaveLocationForm';
 import { SavedLocationsList } from '@/components/locations/SavedLocationsList';
 import { PhotoGallery } from '@/components/locations/PhotoGallery';
+import { POIFilters } from '@/components/map/POIFilters';
+import { POIList } from '@/components/map/POIList';
 import { DevPasswordSignIn } from '@/components/auth/DevPasswordSignIn';
 import { fetchCurrentWeather } from '@/app/actions/weather';
 import { adaptWeatherForPhotography } from '@/lib/utils/weather-adapter';
@@ -225,6 +227,12 @@ export function Sidebar() {
                         />
                       </CardContent>
                     </Card>
+
+                    {/* POI Filters */}
+                    <POIFilters />
+
+                    {/* POI List */}
+                    <POIList />
                   </>
                 )}
               </div>
