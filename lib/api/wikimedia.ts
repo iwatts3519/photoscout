@@ -18,6 +18,10 @@ const WIKIMEDIA_API_BASE = 'https://commons.wikimedia.org/w/api.php';
 // Cache for 1 hour as specified in PLAN.md
 const CACHE_DURATION = 60 * 60 * 1000;
 
+// User-Agent header required by Wikimedia API
+// See: https://meta.wikimedia.org/wiki/User-Agent_policy
+const USER_AGENT = 'PhotoScout/1.0 (https://github.com/iwatts3519/photoscout; photography location planning app)';
+
 /**
  * Search for geotagged images near a location
  */
@@ -41,6 +45,9 @@ async function geosearch(
       cache: true,
       cacheDuration: CACHE_DURATION,
       timeout: 15000,
+      headers: {
+        'User-Agent': USER_AGENT,
+      },
     });
 
     // Check for API error response
@@ -95,6 +102,9 @@ async function getImageInfo(
       cache: true,
       cacheDuration: CACHE_DURATION,
       timeout: 15000,
+      headers: {
+        'User-Agent': USER_AGENT,
+      },
     });
 
     // Check for API error response

@@ -5,13 +5,16 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ImageIcon, AlertCircle } from 'lucide-react';
 import { fetchNearbyPhotos } from '@/app/actions/wikimedia';
 import type { WikimediaPhoto } from '@/src/types/wikimedia.types';
 import { PhotoThumbnail } from './PhotoThumbnail';
 import { PhotoDialog } from './PhotoDialog';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+
+// Debounce delay to prevent rapid API calls when dragging marker
+const FETCH_DEBOUNCE_MS = 500;
 
 interface PhotoGalleryProps {
   /** Location latitude */
@@ -35,12 +38,21 @@ export function PhotoGallery({
   const [error, setError] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<WikimediaPhoto | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadPhotos() {
-      setLoading(true);
+    // Clear any existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set loading state immediately for better UX
+    setLoading(true);
+
+    // Debounce the actual fetch to prevent rapid API calls
+    debounceTimerRef.current = setTimeout(async () => {
       setError(null);
 
       try {
@@ -63,12 +75,13 @@ export function PhotoGallery({
           setLoading(false);
         }
       }
-    }
-
-    loadPhotos();
+    }, FETCH_DEBOUNCE_MS);
 
     return () => {
       cancelled = true;
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
     };
   }, [lat, lng, radiusMeters, limit]);
 

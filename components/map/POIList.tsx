@@ -82,9 +82,21 @@ function POIItem({ poi, onPanTo }: { poi: POI; onPanTo?: (poi: POI) => void }) {
 }
 
 export function POIList() {
-  const { selectedLocation, radius, mapInstance } = useMapStore();
-  const { loading, error, setPOIs, setLoading, setError, getFilteredPOIs, filters } =
-    usePOIStore();
+  const selectedLocation = useMapStore((state) => state.selectedLocation);
+  const radius = useMapStore((state) => state.radius);
+  const mapInstance = useMapStore((state) => state.mapInstance);
+
+  const pois = usePOIStore((state) => state.pois);
+  const loading = usePOIStore((state) => state.loading);
+  const error = usePOIStore((state) => state.error);
+  const filters = usePOIStore((state) => state.filters);
+  const setPOIs = usePOIStore((state) => state.setPOIs);
+  const setLoading = usePOIStore((state) => state.setLoading);
+  const setError = usePOIStore((state) => state.setError);
+
+  // Extract lat/lng for more reliable dependency tracking
+  const lat = selectedLocation?.lat;
+  const lng = selectedLocation?.lng;
 
   // Handler to pan map to POI location
   const handlePanToPOI = (poi: POI) => {
@@ -97,9 +109,13 @@ export function POIList() {
     }
   };
 
+  // Stringify enabledTypes for stable dependency comparison
+  const enabledTypesKey = filters.enabledTypes.join(',');
+
   // Fetch POIs when location or radius changes
   useEffect(() => {
-    if (!selectedLocation) {
+
+    if (lat === undefined || lng === undefined) {
       setPOIs([]);
       return;
     }
@@ -107,20 +123,22 @@ export function POIList() {
     let cancelled = false;
 
     async function loadPOIs() {
-      if (!selectedLocation) return;
+      if (lat === undefined || lng === undefined) return;
 
       setLoading(true);
       setError(null);
 
       try {
         const result = await fetchPOIs(
-          selectedLocation.lat,
-          selectedLocation.lng,
+          lat,
+          lng,
           radius,
           filters.enabledTypes
         );
 
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
         if (result.error) {
           setError(result.error);
@@ -144,10 +162,12 @@ export function POIList() {
     return () => {
       cancelled = true;
     };
-  }, [selectedLocation, radius, filters.enabledTypes, setPOIs, setLoading, setError]);
+  }, [lat, lng, radius, enabledTypesKey, setPOIs, setLoading, setError, filters.enabledTypes]);
 
-  // Get filtered POIs
-  const filteredPOIs = getFilteredPOIs();
+  // Compute filtered POIs from subscribed data
+  const filteredPOIs = filters.showPOIs
+    ? pois.filter((poi) => filters.enabledTypes.includes(poi.type))
+    : [];
 
   // Loading state
   if (loading) {

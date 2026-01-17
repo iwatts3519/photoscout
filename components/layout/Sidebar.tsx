@@ -251,14 +251,14 @@ export function Sidebar() {
                         />
                       </CardContent>
                     </Card>
-
-                    {/* POI Filters */}
-                    <POIFilters />
-
-                    {/* POI List */}
-                    <POIList />
                   </>
                 )}
+
+                {/* POI Filters - Always visible when location selected */}
+                <POIFilters />
+
+                {/* POI List - Always visible when location selected */}
+                <POIList />
               </div>
             </>
           ) : (

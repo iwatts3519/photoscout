@@ -56,8 +56,15 @@ function createPOIMarkerElement(poi: POI): HTMLDivElement {
 }
 
 export function POILayer({ map }: POILayerProps) {
-  const getFilteredPOIs = usePOIStore((state) => state.getFilteredPOIs);
+  // Subscribe to both the POIs data and filters so we re-render when either changes
+  const pois = usePOIStore((state) => state.pois);
+  const filters = usePOIStore((state) => state.filters);
   const markersRef = useRef<Marker[]>([]);
+
+  // Filter POIs based on current filter settings
+  const filteredPOIs = filters.showPOIs
+    ? pois.filter((poi) => filters.enabledTypes.includes(poi.type))
+    : [];
 
   useEffect(() => {
     if (!map) return;
@@ -66,11 +73,8 @@ export function POILayer({ map }: POILayerProps) {
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
-    // Get filtered POIs
-    const pois = getFilteredPOIs();
-
-    // Add new markers for each POI
-    pois.forEach((poi) => {
+    // Add new markers for each filtered POI
+    filteredPOIs.forEach((poi) => {
       const el = createPOIMarkerElement(poi);
 
       const marker = new maplibregl.Marker({ element: el })
@@ -114,7 +118,7 @@ export function POILayer({ map }: POILayerProps) {
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
     };
-  }, [map, getFilteredPOIs]);
+  }, [map, filteredPOIs]);
 
   return null;
 }

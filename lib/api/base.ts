@@ -112,9 +112,12 @@ export async function fetchAPI<T>(
     }
   }
 
+  // Generate cache key - include body for POST requests since URL alone isn't unique
+  const cacheKey = opts.body ? `${url}:${String(opts.body)}` : url;
+
   // Check cache if enabled
   if (shouldCache) {
-    const cached = getCached<T>(url, cacheDuration);
+    const cached = getCached<T>(cacheKey, cacheDuration);
     if (cached) {
       return cached;
     }
@@ -140,7 +143,7 @@ export async function fetchAPI<T>(
 
       // Cache successful response if enabled
       if (shouldCache) {
-        setCache(url, data);
+        setCache(cacheKey, data);
       }
 
       return data as T;
