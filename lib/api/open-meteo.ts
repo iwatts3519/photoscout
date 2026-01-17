@@ -8,6 +8,8 @@ import { fetchAPI, buildURL } from './base';
 import type {
   WeatherConditions,
   WeatherForecast,
+  DailyForecast,
+  MultiDayForecast,
 } from '@/src/types/weather.types';
 import { WeatherType } from '@/src/types/weather.types';
 
@@ -242,4 +244,157 @@ export async function getCurrentWeather(
 ): Promise<WeatherConditions> {
   const forecast = await getWeatherForecast(latitude, longitude, config);
   return forecast.current;
+}
+
+/**
+ * Open-Meteo API response structure for multi-day forecast
+ */
+interface OpenMeteoMultiDayResponse {
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  timezone_abbreviation: string;
+  elevation: number;
+  daily: {
+    time: string[]; // Array of dates (YYYY-MM-DD)
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    precipitation_sum: number[];
+    precipitation_probability_max: number[];
+    weather_code: number[];
+    wind_speed_10m_max: number[];
+    wind_gusts_10m_max: number[];
+    sunrise: string[];
+    sunset: string[];
+    uv_index_max: number[];
+  };
+  hourly?: {
+    time: string[];
+    cloud_cover: number[];
+    visibility: number[];
+  };
+}
+
+/**
+ * Get 7-day weather forecast for a location
+ *
+ * @param latitude - Latitude of location
+ * @param longitude - Longitude of location
+ * @param config - API configuration
+ * @returns Multi-day weather forecast data
+ */
+export async function getMultiDayForecast(
+  latitude: number,
+  longitude: number,
+  config: OpenMeteoConfig = {}
+): Promise<MultiDayForecast> {
+  // Validate coordinates
+  if (latitude < -90 || latitude > 90) {
+    throw new Error('Invalid latitude: must be between -90 and 90');
+  }
+  if (longitude < -180 || longitude > 180) {
+    throw new Error('Invalid longitude: must be between -180 and 180');
+  }
+
+  const timezone = config.timezone || 'Europe/London';
+
+  // Build request URL with daily parameters
+  const url = buildURL(OPEN_METEO_BASE_URL, {
+    latitude: latitude.toFixed(4),
+    longitude: longitude.toFixed(4),
+    daily: [
+      'temperature_2m_max',
+      'temperature_2m_min',
+      'precipitation_sum',
+      'precipitation_probability_max',
+      'weather_code',
+      'wind_speed_10m_max',
+      'wind_gusts_10m_max',
+      'sunrise',
+      'sunset',
+      'uv_index_max',
+    ].join(','),
+    hourly: [
+      'cloud_cover',
+      'visibility',
+    ].join(','),
+    timezone,
+    windspeed_unit: 'mph',
+    temperature_unit: 'celsius',
+    forecast_days: 7, // 7-day forecast
+  });
+
+  const response = await fetchAPI<OpenMeteoMultiDayResponse>(url, {
+    cache: true,
+    cacheDuration: config.cacheDuration || 60 * 60 * 1000, // 1 hour default for forecast
+  });
+
+  // Transform Open-Meteo response to our format
+  return transformMultiDayResponse(response);
+}
+
+/**
+ * Transform Open-Meteo multi-day API response to our MultiDayForecast format
+ */
+function transformMultiDayResponse(response: OpenMeteoMultiDayResponse): MultiDayForecast {
+  const daily: DailyForecast[] = [];
+
+  for (let i = 0; i < response.daily.time.length; i++) {
+    const date = response.daily.time[i];
+    const tempMin = response.daily.temperature_2m_min[i];
+    const tempMax = response.daily.temperature_2m_max[i];
+
+    // Calculate daily averages from hourly data if available
+    let cloudCoverAvg = 50; // Default
+    let visibilityAvg = 10000; // Default 10km
+
+    if (response.hourly) {
+      // Find hourly data for this day (24 hours starting at midnight)
+      const dayStartIndex = i * 24;
+      const dayEndIndex = Math.min(dayStartIndex + 24, response.hourly.time.length);
+
+      if (dayStartIndex < response.hourly.time.length) {
+        const dayCloudCover = response.hourly.cloud_cover.slice(dayStartIndex, dayEndIndex);
+        const dayVisibility = response.hourly.visibility.slice(dayStartIndex, dayEndIndex);
+
+        if (dayCloudCover.length > 0) {
+          cloudCoverAvg = Math.round(
+            dayCloudCover.reduce((sum, v) => sum + v, 0) / dayCloudCover.length
+          );
+        }
+
+        if (dayVisibility.length > 0) {
+          visibilityAvg = Math.round(
+            dayVisibility.reduce((sum, v) => sum + v, 0) / dayVisibility.length
+          );
+        }
+      }
+    }
+
+    daily.push({
+      date,
+      temperatureMin: tempMin,
+      temperatureMax: tempMax,
+      temperatureAvg: Math.round((tempMin + tempMax) / 2),
+      cloudCoverAvg,
+      precipitationProbabilityMax: response.daily.precipitation_probability_max[i],
+      precipitationSum: response.daily.precipitation_sum[i],
+      weatherType: mapWMOCodeToWeatherType(response.daily.weather_code[i]),
+      windSpeedMax: response.daily.wind_speed_10m_max[i],
+      windGustMax: response.daily.wind_gusts_10m_max[i],
+      sunrise: response.daily.sunrise[i],
+      sunset: response.daily.sunset[i],
+      uvIndexMax: response.daily.uv_index_max[i],
+      visibilityAvg,
+    });
+  }
+
+  return {
+    daily,
+    location: {
+      latitude: response.latitude,
+      longitude: response.longitude,
+    },
+    fetchedAt: new Date().toISOString(),
+  };
 }

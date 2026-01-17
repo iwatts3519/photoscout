@@ -85,6 +85,39 @@ export interface WeatherForecast {
 }
 
 /**
+ * Daily weather summary for multi-day forecasts
+ */
+export interface DailyForecast {
+  date: string; // ISO 8601 date (YYYY-MM-DD)
+  temperatureMin: number; // Celsius
+  temperatureMax: number; // Celsius
+  temperatureAvg: number; // Celsius (calculated)
+  cloudCoverAvg: number; // Percentage 0-100
+  precipitationProbabilityMax: number; // Percentage 0-100
+  precipitationSum: number; // mm
+  weatherType: WeatherType; // Dominant weather type
+  windSpeedMax: number; // mph
+  windGustMax: number; // mph
+  sunrise: string; // ISO 8601 time string
+  sunset: string; // ISO 8601 time string
+  uvIndexMax: number; // 0-11+
+  visibilityAvg: number; // Meters (estimated from hourly if available)
+}
+
+/**
+ * Multi-day weather forecast (7 days)
+ */
+export interface MultiDayForecast {
+  daily: DailyForecast[];
+  location: {
+    latitude: number;
+    longitude: number;
+    name?: string;
+  };
+  fetchedAt: string; // ISO 8601 date string
+}
+
+/**
  * WMO Weather Code descriptions
  * Used by Open-Meteo API
  */

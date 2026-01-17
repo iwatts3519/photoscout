@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { MapPin, Loader2, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MapPin, Loader2, AlertCircle, Calendar, Cloud } from 'lucide-react';
 import { WeatherCard } from '@/components/weather/WeatherCard';
+import { WeatherForecastCard } from '@/components/weather/WeatherForecastCard';
 import { ConditionsScore } from '@/components/weather/ConditionsScore';
 import { SunTimesCard } from '@/components/weather/SunTimesCard';
 import { SaveLocationForm } from '@/components/locations/SaveLocationForm';
@@ -19,10 +21,12 @@ import { POIList } from '@/components/map/POIList';
 import { LocationSearch } from '@/components/map/LocationSearch';
 import { DateTimePicker } from '@/components/shared/DateTimePicker';
 import { DevPasswordSignIn } from '@/components/auth/DevPasswordSignIn';
-import { fetchCurrentWeather } from '@/app/actions/weather';
+import { fetchCurrentWeather, fetchMultiDayForecast } from '@/app/actions/weather';
 import { adaptWeatherForPhotography } from '@/lib/utils/weather-adapter';
+import { analyzeForecast, type AnalyzedForecast } from '@/lib/utils/forecast-analyzer';
 import { useAuth } from '@/src/hooks/useAuth';
 import type { WeatherConditions as MetOfficeWeather } from '@/src/types/weather.types';
+import { cn } from '@/lib/utils';
 
 export function Sidebar() {
   const {
@@ -36,17 +40,24 @@ export function Sidebar() {
   const { showCoordinates, distanceUnit } = useSettingsStore();
   const { user } = useAuth();
   const [weather, setWeather] = useState<MetOfficeWeather | null>(null);
+  const [forecast, setForecast] = useState<AnalyzedForecast | null>(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
+  const [isLoadingForecast, setIsLoadingForecast] = useState(false);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [forecastError, setForecastError] = useState<string | null>(null);
+  const [weatherView, setWeatherView] = useState<'current' | 'forecast'>('current');
 
   // Fetch weather data when location changes
   useEffect(() => {
     if (!selectedLocation) {
       setWeather(null);
+      setForecast(null);
       setWeatherError(null);
+      setForecastError(null);
       return;
     }
 
+    // Fetch current weather
     const fetchWeather = async () => {
       setIsLoadingWeather(true);
       setWeatherError(null);
@@ -66,8 +77,37 @@ export function Sidebar() {
       setIsLoadingWeather(false);
     };
 
+    // Fetch multi-day forecast
+    const fetchForecast = async () => {
+      setIsLoadingForecast(true);
+      setForecastError(null);
+
+      const result = await fetchMultiDayForecast(
+        selectedLocation.lat,
+        selectedLocation.lng
+      );
+
+      if (result.error) {
+        setForecastError(result.error);
+        setForecast(null);
+      } else if (result.data) {
+        const analyzed = analyzeForecast(result.data);
+        setForecast(analyzed);
+      }
+
+      setIsLoadingForecast(false);
+    };
+
+    // Fetch both in parallel
     fetchWeather();
+    fetchForecast();
   }, [selectedLocation]);
+
+  // Handle selecting a date from the forecast card
+  const handleForecastDateSelect = (date: Date) => {
+    setSelectedDateTime(date);
+    setWeatherView('current'); // Switch to current view to see that day's details
+  };
 
   const formatCoordinate = (value: number, decimals: number = 6): string => {
     return value.toFixed(decimals);
@@ -184,8 +224,37 @@ export function Sidebar() {
 
               {/* Weather and Photography Conditions */}
               <div className="space-y-4 pt-4">
+                {/* Weather View Toggle */}
+                <div className="flex gap-1 p-1 bg-muted rounded-lg">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      'flex-1 gap-2',
+                      weatherView === 'current' && 'bg-background shadow-sm'
+                    )}
+                    onClick={() => setWeatherView('current')}
+                  >
+                    <Cloud className="h-4 w-4" />
+                    Current
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      'flex-1 gap-2',
+                      weatherView === 'forecast' && 'bg-background shadow-sm'
+                    )}
+                    onClick={() => setWeatherView('forecast')}
+                  >
+                    <Calendar className="h-4 w-4" />
+                    7-Day
+                  </Button>
+                </div>
+
                 {/* Loading State */}
-                {isLoadingWeather && (
+                {((weatherView === 'current' && isLoadingWeather) ||
+                  (weatherView === 'forecast' && isLoadingForecast)) && (
                   <Card>
                     <CardContent className="flex items-center justify-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -196,8 +265,8 @@ export function Sidebar() {
                   </Card>
                 )}
 
-                {/* Error State */}
-                {weatherError && !isLoadingWeather && (
+                {/* Error State - Current Weather */}
+                {weatherView === 'current' && weatherError && !isLoadingWeather && (
                   <Card className="border-destructive">
                     <CardContent className="flex items-start gap-2 py-4">
                       <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
@@ -213,8 +282,25 @@ export function Sidebar() {
                   </Card>
                 )}
 
-                {/* Weather and Conditions Cards */}
-                {weather && !isLoadingWeather && (
+                {/* Error State - Forecast */}
+                {weatherView === 'forecast' && forecastError && !isLoadingForecast && (
+                  <Card className="border-destructive">
+                    <CardContent className="flex items-start gap-2 py-4">
+                      <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-destructive">
+                          Failed to load forecast
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {forecastError}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Current Weather View */}
+                {weatherView === 'current' && weather && !isLoadingWeather && (
                   <>
                     {/* Sun Times */}
                     <SunTimesCard
@@ -252,6 +338,14 @@ export function Sidebar() {
                       </CardContent>
                     </Card>
                   </>
+                )}
+
+                {/* 7-Day Forecast View */}
+                {weatherView === 'forecast' && forecast && !isLoadingForecast && (
+                  <WeatherForecastCard
+                    forecast={forecast}
+                    onSelectDate={handleForecastDateSelect}
+                  />
                 )}
 
                 {/* POI Filters - Always visible when location selected */}

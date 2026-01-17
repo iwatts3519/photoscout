@@ -11,10 +11,10 @@
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
-| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 40% |
+| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 50% |
 
 **Last Updated**: 2026-01-17
-**Current Phase**: Phase 8D Complete - User Preferences & Settings ✅
+**Current Phase**: Phase 8C Complete - Multi-Day Weather Forecast ✅
 
 ---
 
@@ -884,27 +884,38 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 
 ---
 
-#### Phase 8C: Multi-Day Weather Forecast (High Priority)
+#### Phase 8C: Multi-Day Weather Forecast (✅ COMPLETED)
 
 **Goal**: Show weather forecast for next 7 days, not just current conditions.
 
 **Tasks**:
-- [ ] Extend Open-Meteo API client to fetch forecast
-- [ ] Create `WeatherForecastCard` component
-- [ ] Add forecast view toggle (current vs forecast)
-- [ ] Show best days for photography based on forecast
-- [ ] Highlight golden hour times for each day
+- [x] Extend Open-Meteo API client to fetch forecast
+- [x] Create `WeatherForecastCard` component
+- [x] Add forecast view toggle (current vs forecast)
+- [x] Show best days for photography based on forecast
+- [x] Highlight golden hour times for each day
 
-**Files to Create**:
-- `components/weather/WeatherForecastCard.tsx` - Multi-day forecast display
-- `lib/utils/forecast-analyzer.ts` - Analyze forecast for best photography days
+**Files Created**: 2 new files
+- `components/weather/WeatherForecastCard.tsx` - Multi-day forecast display with expandable rows
+- `lib/utils/forecast-analyzer.ts` - Analyze forecast and rank days for photography
 
-**Files to Modify**:
-- `app/actions/weather.ts` - Add forecast fetching
-- `lib/api/open-meteo.ts` - Add forecast endpoint
-- `components/layout/Sidebar.tsx` - Add forecast toggle/view
+**Files Modified**: 4 files
+- `src/types/weather.types.ts` - Added DailyForecast and MultiDayForecast types
+- `lib/api/open-meteo.ts` - Added getMultiDayForecast() function
+- `app/actions/weather.ts` - Added fetchMultiDayForecast() server action
+- `components/layout/Sidebar.tsx` - Added weather view toggle (Current/7-Day)
 
-**Dependencies**: Requires Phase 8B (date selection)
+**Key Features**:
+- 7-day forecast with daily summaries
+- Photography score for each day (color-coded)
+- Best day indicator (star icon)
+- Expandable day rows with detailed conditions
+- Golden hour times for each day
+- "Plan for this day" button to select date
+- Toggle between current weather and forecast views
+- Uses user's unit preferences from settings
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167) | ✅ build
 
 **Benefits**:
 - Plan shoots days in advance
@@ -1139,9 +1150,9 @@ ALTER TABLE locations ADD COLUMN collection_id UUID REFERENCES collections(id);
 2. **8B: Date/Time Selection** - ✅ Complete
 3. **8D: User Preferences & Settings** - ✅ Complete
 
-#### Phase 8.2 (High Impact, Medium Effort) - NEXT
-4. **8C: Multi-Day Forecast** - Major value add
-5. **8E: Collections** - Better organization
+#### Phase 8.2 (High Impact, Medium Effort) - IN PROGRESS
+4. **8C: Multi-Day Forecast** - ✅ Complete
+5. **8E: Collections** - Better organization (NEXT)
 6. **8F: Location Notes** - Enhanced utility
 
 #### Phase 8.3 (Polish & Power Features)
