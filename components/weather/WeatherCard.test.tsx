@@ -2,10 +2,43 @@
  * Tests for WeatherCard component
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { WeatherCard } from './WeatherCard';
 import { WeatherType, type WeatherConditions } from '@/src/types/weather.types';
+
+// Mock the settings store - tests use metric units (km/h, km, celsius)
+vi.mock('@/src/stores/settingsStore', () => ({
+  useSettingsStore: () => ({
+    temperatureUnit: 'celsius',
+    speedUnit: 'kmh',
+    distanceUnit: 'km',
+  }),
+  formatTemperature: (celsius: number, unit: string) => {
+    if (unit === 'fahrenheit') {
+      const fahrenheit = (celsius * 9) / 5 + 32;
+      return `${Math.round(fahrenheit)}°F`;
+    }
+    return `${Math.round(celsius)}°C`;
+  },
+  formatSpeed: (kmh: number, unit: string) => {
+    if (unit === 'mph') {
+      const mph = kmh * 0.621371;
+      return `${Math.round(mph)} mph`;
+    }
+    return `${Math.round(kmh)} km/h`;
+  },
+  formatVisibility: (meters: number, unit: string) => {
+    if (unit === 'miles') {
+      const miles = meters / 1609.344;
+      return `${miles.toFixed(1)} mi`;
+    }
+    if (meters >= 1000) {
+      return `${(meters / 1000).toFixed(1)} km`;
+    }
+    return `${Math.round(meters)} m`;
+  },
+}));
 
 const mockWeather: WeatherConditions = {
   temperature: 15.5,
@@ -56,8 +89,10 @@ describe('WeatherCard', () => {
   it('should display wind speed with direction', () => {
     render(<WeatherCard weather={mockWeather} />);
 
-    expect(screen.getByText('13 mph W')).toBeInTheDocument(); // Rounded wind speed
-    expect(screen.getByText('Gusts to 18 mph')).toBeInTheDocument();
+    // windSpeed 12.5 mph * 1.60934 = 20.12 km/h -> 20 km/h
+    expect(screen.getByText('20 km/h W')).toBeInTheDocument();
+    // windGust 18.3 mph * 1.60934 = 29.45 km/h -> 29 km/h
+    expect(screen.getByText('Gusts to 29 km/h')).toBeInTheDocument();
   });
 
   it('should display wind direction in degrees', () => {
@@ -191,35 +226,36 @@ describe('WeatherCard', () => {
       const weather = { ...mockWeather, windDirection: 0, windSpeed: 0 };
       render(<WeatherCard weather={weather} />);
 
-      expect(screen.getByText('0 mph N')).toBeInTheDocument();
+      expect(screen.getByText('0 km/h N')).toBeInTheDocument();
     });
 
     it('should show E for 90°', () => {
       const weather = { ...mockWeather, windDirection: 90 };
       render(<WeatherCard weather={weather} />);
 
-      expect(screen.getByText('13 mph E')).toBeInTheDocument();
+      // 12.5 mph * 1.60934 = 20.12 km/h -> 20 km/h
+      expect(screen.getByText('20 km/h E')).toBeInTheDocument();
     });
 
     it('should show S for 180°', () => {
       const weather = { ...mockWeather, windDirection: 180 };
       render(<WeatherCard weather={weather} />);
 
-      expect(screen.getByText('13 mph S')).toBeInTheDocument();
+      expect(screen.getByText('20 km/h S')).toBeInTheDocument();
     });
 
     it('should show W for 270°', () => {
       const weather = { ...mockWeather, windDirection: 270 };
       render(<WeatherCard weather={weather} />);
 
-      expect(screen.getByText('13 mph W')).toBeInTheDocument();
+      expect(screen.getByText('20 km/h W')).toBeInTheDocument();
     });
 
     it('should show NE for 45°', () => {
       const weather = { ...mockWeather, windDirection: 45 };
       render(<WeatherCard weather={weather} />);
 
-      expect(screen.getByText('13 mph NE')).toBeInTheDocument();
+      expect(screen.getByText('20 km/h NE')).toBeInTheDocument();
     });
   });
 });

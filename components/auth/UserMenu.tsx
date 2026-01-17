@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { LogOut, User as UserIcon, Loader2 } from 'lucide-react';
+import { LogOut, User as UserIcon, Loader2, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { SettingsDialog } from '@/components/settings/SettingsDialog';
 
 export function UserMenu() {
   const { user, signOut, loading } = useAuth();
@@ -78,6 +79,15 @@ export function UserMenu() {
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
+
+        <SettingsDialog
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+          }
+        />
 
         <DropdownMenuItem disabled>
           <UserIcon className="mr-2 h-4 w-4" />

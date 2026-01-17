@@ -7,7 +7,9 @@ import { Menu, LogIn } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { AuthDialog } from '@/components/auth/AuthDialog';
+import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { useAuth } from '@/src/hooks/useAuth';
+import { useRecentSearches } from '@/src/hooks/useRecentSearches';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -17,6 +19,9 @@ export function AppShell({ children }: AppShellProps) {
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { user, loading } = useAuth();
+
+  // Sync recent searches with localStorage
+  useRecentSearches();
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -30,20 +35,23 @@ export function AppShell({ children }: AppShellProps) {
         {children}
 
         {/* Desktop User Menu - Top Right */}
-        <div className="hidden lg:flex absolute top-4 right-4 z-10">
+        <div className="hidden lg:flex absolute top-4 right-4 z-10 gap-2">
           {!loading && (
             <>
               {user ? (
                 <UserMenu />
               ) : (
-                <Button
-                  onClick={() => setIsAuthDialogOpen(true)}
-                  variant="secondary"
-                  className="bg-white hover:bg-gray-100 shadow-md"
-                >
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Sign In
-                </Button>
+                <>
+                  <SettingsDialog />
+                  <Button
+                    onClick={() => setIsAuthDialogOpen(true)}
+                    variant="secondary"
+                    className="bg-white hover:bg-gray-100 shadow-md"
+                  >
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign In
+                  </Button>
+                </>
               )}
             </>
           )}
@@ -73,19 +81,22 @@ export function AppShell({ children }: AppShellProps) {
               <div className="p-4 border-b flex items-center justify-between">
                 <h2 className="font-semibold">PhotoScout</h2>
                 {!loading && (
-                  <>
+                  <div className="flex items-center gap-2">
                     {user ? (
                       <UserMenu />
                     ) : (
-                      <Button
-                        onClick={() => setIsAuthDialogOpen(true)}
-                        size="sm"
-                      >
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Sign In
-                      </Button>
+                      <>
+                        <SettingsDialog />
+                        <Button
+                          onClick={() => setIsAuthDialogOpen(true)}
+                          size="sm"
+                        >
+                          <LogIn className="mr-2 h-4 w-4" />
+                          Sign In
+                        </Button>
+                      </>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
 

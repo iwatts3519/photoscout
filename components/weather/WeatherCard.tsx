@@ -8,20 +8,16 @@ import { Cloud, Wind, Eye, Droplets, Compass, Gauge } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { WeatherConditions } from '@/src/types/weather.types';
 import { WeatherTypeDescription } from '@/src/types/weather.types';
+import {
+  useSettingsStore,
+  formatTemperature,
+  formatSpeed,
+  formatVisibility as formatVisibilityWithUnit,
+} from '@/src/stores/settingsStore';
 
 interface WeatherCardProps {
   weather: WeatherConditions;
   className?: string;
-}
-
-/**
- * Format visibility in human-readable units
- */
-function formatVisibility(meters: number): string {
-  if (meters >= 1000) {
-    return `${(meters / 1000).toFixed(1)} km`;
-  }
-  return `${meters} m`;
 }
 
 /**
@@ -56,10 +52,15 @@ function getVisibilityQuality(meters: number): string {
 }
 
 export function WeatherCard({ weather, className }: WeatherCardProps) {
+  const { temperatureUnit, speedUnit, distanceUnit } = useSettingsStore();
   const weatherDescription = WeatherTypeDescription[weather.weatherType] || 'Unknown';
   const cloudCoverDesc = getCloudCoverDescription(weather.cloudCover);
   const visibilityQuality = getVisibilityQuality(weather.visibility);
   const windDirection = getCompassDirection(weather.windDirection);
+
+  // Convert wind speed from mph to km/h for formatting (API returns mph)
+  const windSpeedKmh = weather.windSpeed * 1.60934;
+  const windGustKmh = weather.windGust * 1.60934;
 
   return (
     <Card className={className}>
@@ -79,9 +80,11 @@ export function WeatherCard({ weather, className }: WeatherCardProps) {
             <span className="text-sm text-muted-foreground">Temperature</span>
           </div>
           <div className="text-right">
-            <p className="text-sm font-medium">{Math.round(weather.temperature)}°C</p>
+            <p className="text-sm font-medium">
+              {formatTemperature(weather.temperature, temperatureUnit)}
+            </p>
             <p className="text-xs text-muted-foreground">
-              Feels like {Math.round(weather.feelsLike)}°C
+              Feels like {formatTemperature(weather.feelsLike, temperatureUnit)}
             </p>
           </div>
         </div>
@@ -105,7 +108,9 @@ export function WeatherCard({ weather, className }: WeatherCardProps) {
             <span className="text-sm text-muted-foreground">Visibility</span>
           </div>
           <div className="text-right">
-            <p className="text-sm font-medium">{formatVisibility(weather.visibility)}</p>
+            <p className="text-sm font-medium">
+              {formatVisibilityWithUnit(weather.visibility, distanceUnit)}
+            </p>
             <p className="text-xs text-muted-foreground">{visibilityQuality}</p>
           </div>
         </div>
@@ -118,10 +123,10 @@ export function WeatherCard({ weather, className }: WeatherCardProps) {
           </div>
           <div className="text-right">
             <p className="text-sm font-medium">
-              {Math.round(weather.windSpeed)} mph {windDirection}
+              {formatSpeed(windSpeedKmh, speedUnit)} {windDirection}
             </p>
             <p className="text-xs text-muted-foreground">
-              Gusts to {Math.round(weather.windGust)} mph
+              Gusts to {formatSpeed(windGustKmh, speedUnit)}
             </p>
           </div>
         </div>

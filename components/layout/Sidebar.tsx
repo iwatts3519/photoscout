@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useMapStore } from '@/src/stores/mapStore';
+import { useSettingsStore, formatDistance } from '@/src/stores/settingsStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,8 @@ import { SavedLocationsList } from '@/components/locations/SavedLocationsList';
 import { PhotoGallery } from '@/components/locations/PhotoGallery';
 import { POIFilters } from '@/components/map/POIFilters';
 import { POIList } from '@/components/map/POIList';
+import { LocationSearch } from '@/components/map/LocationSearch';
+import { DateTimePicker } from '@/components/shared/DateTimePicker';
 import { DevPasswordSignIn } from '@/components/auth/DevPasswordSignIn';
 import { fetchCurrentWeather } from '@/app/actions/weather';
 import { adaptWeatherForPhotography } from '@/lib/utils/weather-adapter';
@@ -22,7 +25,15 @@ import { useAuth } from '@/src/hooks/useAuth';
 import type { WeatherConditions as MetOfficeWeather } from '@/src/types/weather.types';
 
 export function Sidebar() {
-  const { selectedLocation, radius, setRadius } = useMapStore();
+  const {
+    selectedLocation,
+    radius,
+    setRadius,
+    selectedDateTime,
+    setSelectedDateTime,
+    resetDateTime,
+  } = useMapStore();
+  const { showCoordinates, distanceUnit } = useSettingsStore();
   const { user } = useAuth();
   const [weather, setWeather] = useState<MetOfficeWeather | null>(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
@@ -62,13 +73,6 @@ export function Sidebar() {
     return value.toFixed(decimals);
   };
 
-  const formatRadius = (meters: number): string => {
-    if (meters >= 1000) {
-      return `${(meters / 1000).toFixed(1)} km`;
-    }
-    return `${meters} m`;
-  };
-
   // Radius range: 500m to 10km
   const minRadius = 500;
   const maxRadius = 10000;
@@ -93,39 +97,47 @@ export function Sidebar() {
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Location Search */}
+          <div className="space-y-2">
+            <Label>Search Location</Label>
+            <LocationSearch />
+          </div>
+
           {/* Dev Only: Password Sign In */}
           {!user && <DevPasswordSignIn />}
           {selectedLocation ? (
             <>
-              {/* Coordinates Display */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="latitude">Latitude</Label>
-                  <Input
-                    id="latitude"
-                    value={formatCoordinate(selectedLocation.lat)}
-                    readOnly
-                    className="font-mono"
-                  />
-                </div>
+              {/* Coordinates Display - Conditional based on settings */}
+              {showCoordinates && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="latitude">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      value={formatCoordinate(selectedLocation.lat)}
+                      readOnly
+                      className="font-mono"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="longitude">Longitude</Label>
-                  <Input
-                    id="longitude"
-                    value={formatCoordinate(selectedLocation.lng)}
-                    readOnly
-                    className="font-mono"
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="longitude">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      value={formatCoordinate(selectedLocation.lng)}
+                      readOnly
+                      className="font-mono"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Radius Slider */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="radius">Search Radius</Label>
                   <span className="text-sm font-medium text-muted-foreground">
-                    {formatRadius(radius)}
+                    {formatDistance(radius, distanceUnit)}
                   </span>
                 </div>
                 <Slider
@@ -138,9 +150,19 @@ export function Sidebar() {
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{formatRadius(minRadius)}</span>
-                  <span>{formatRadius(maxRadius)}</span>
+                  <span>{formatDistance(minRadius, distanceUnit)}</span>
+                  <span>{formatDistance(maxRadius, distanceUnit)}</span>
                 </div>
+              </div>
+
+              {/* Date/Time Picker for Planning */}
+              <div className="space-y-2">
+                <Label>Plan Your Shoot</Label>
+                <DateTimePicker
+                  selectedDate={selectedDateTime}
+                  onDateChange={setSelectedDateTime}
+                  onReset={resetDateTime}
+                />
               </div>
 
               {/* Save Location Form */}
@@ -198,6 +220,7 @@ export function Sidebar() {
                     <SunTimesCard
                       lat={selectedLocation.lat}
                       lng={selectedLocation.lng}
+                      date={selectedDateTime}
                     />
 
                     {/* Weather Conditions */}
@@ -208,6 +231,7 @@ export function Sidebar() {
                       lat={selectedLocation.lat}
                       lng={selectedLocation.lng}
                       weather={adaptWeatherForPhotography(weather)}
+                      date={selectedDateTime}
                     />
 
                     {/* Nearby Photos */}

@@ -11,9 +11,10 @@
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
+| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 40% |
 
-**Last Updated**: 2026-01-16
-**Current Phase**: Phase 7 Complete - All High Priority Core Features ✅
+**Last Updated**: 2026-01-17
+**Current Phase**: Phase 8D Complete - User Preferences & Settings ✅
 
 ---
 
@@ -771,20 +772,439 @@ npm run typecheck && npm run lint && npm run test
 
 **🎉 PHASE 7 COMPLETE! All success criteria achieved.**
 
-**Detailed Plan**: `C:\Users\iwatt\.claude\plans\polymorphic-cooking-stearns.md`
+---
+
+## 📋 Phase 8: UX & Feature Enhancements (PLANNED)
+
+### Goal
+Improve PhotoScout's usability, user experience, and feature set based on codebase analysis and UX best practices research. Focus on high-impact improvements that make the app more useful and user-friendly.
+
+### Current State Analysis
+
+**Strengths:**
+- Solid foundation with map, weather, and photography scoring
+- Good mobile responsiveness
+- Comprehensive test coverage (167 tests)
+- Dark mode support exists but no user control
+
+**Gaps Identified:**
+1. No location search/geocoding (only map clicking)
+2. No date/time selection for future planning
+3. Only current weather (no multi-day forecast)
+4. No user preferences/settings
+5. No onboarding flow
+6. Limited location organization (tags exist but no collections/folders)
+7. No notes/annotations on locations
+8. No share/export functionality
+9. No keyboard shortcuts
+10. No location history/recently viewed
+
+### Sub-Phases
+
+#### Phase 8A: Location Search & Geocoding (✅ COMPLETED)
+
+**Goal**: Allow users to search for locations by name instead of only clicking on map.
+
+**Tasks**:
+- [x] Add geocoding API integration (Nominatim/OpenStreetMap - free, no key required)
+- [x] Create `LocationSearch` component with autocomplete
+- [x] Add search input to sidebar/map controls
+- [x] Store recent searches in localStorage
+- [x] Add debounced search with loading states
+
+**Files Created**: 5 new files
+- `src/types/geocoding.types.ts` - Type definitions for geocoding
+- `lib/api/geocoding.ts` - Nominatim API client with caching (24hr)
+- `app/actions/geocoding.ts` - Server actions with Zod validation
+- `components/map/LocationSearch.tsx` - Search input with autocomplete dropdown
+- `src/hooks/useRecentSearches.ts` - LocalStorage sync for recent searches
+
+**Files Modified**: 3 files
+- `src/stores/mapStore.ts` - Added search state and actions
+- `components/layout/Sidebar.tsx` - Integrated LocationSearch component
+- `components/layout/AppShell.tsx` - Added useRecentSearches hook
+
+**Key Features**:
+- Debounced search (300ms) to prevent API spam
+- UK-biased results (countrycodes=gb)
+- Recent searches persisted in localStorage (max 10)
+- Fly-to animation when selecting result
+- Loading and error states
+- Accessible with ARIA attributes
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167) | ✅ build
+
+**Benefits**:
+- Faster location discovery
+- Better for planning trips
+- More intuitive for users unfamiliar with map navigation
+
+---
+
+#### Phase 8B: Date/Time Selection for Planning (✅ COMPLETED)
+
+**Goal**: Allow users to plan shoots for future dates, not just current conditions.
+
+**Tasks**:
+- [x] Add date picker component (shadcn/ui calendar)
+- [x] Add time selector for specific times
+- [x] Update sun calculations to use selected date
+- [x] Store selected date in mapStore
+- [x] Show "Planning for: [date]" indicator
+- [x] Add quick date buttons (Today, Tomorrow, +2 days, +7 days)
+
+**Files Created**: 3 new files
+- `components/ui/calendar.tsx` - shadcn/ui calendar component (react-day-picker v9)
+- `components/ui/popover.tsx` - shadcn/ui popover component
+- `components/shared/DateTimePicker.tsx` - Combined date/time picker with quick dates
+
+**Files Modified**: 2 files
+- `src/stores/mapStore.ts` - Added selectedDateTime, setSelectedDateTime, resetDateTime
+- `components/layout/Sidebar.tsx` - Integrated DateTimePicker, passes date to SunTimesCard and ConditionsScore
+
+**Dependencies Added**:
+- `date-fns` - Date manipulation library
+- `react-day-picker` - Calendar component (v9)
+- `@radix-ui/react-popover` - Popover primitive
+
+**Key Features**:
+- Calendar picker with future dates only (can't select past)
+- Time selector with hour/minute dropdowns (15-min increments)
+- Quick date buttons for common planning scenarios
+- "Planning for: [date]" indicator when viewing future dates
+- "Now" button to reset to current time
+- Sun times and photography score update based on selected date/time
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167) | ✅ build
+
+**Benefits**:
+- Enables trip planning
+- Compare conditions across dates
+- Plan shoots weeks in advance
+
+---
+
+#### Phase 8C: Multi-Day Weather Forecast (High Priority)
+
+**Goal**: Show weather forecast for next 7 days, not just current conditions.
+
+**Tasks**:
+- [ ] Extend Open-Meteo API client to fetch forecast
+- [ ] Create `WeatherForecastCard` component
+- [ ] Add forecast view toggle (current vs forecast)
+- [ ] Show best days for photography based on forecast
+- [ ] Highlight golden hour times for each day
+
+**Files to Create**:
+- `components/weather/WeatherForecastCard.tsx` - Multi-day forecast display
+- `lib/utils/forecast-analyzer.ts` - Analyze forecast for best photography days
+
+**Files to Modify**:
+- `app/actions/weather.ts` - Add forecast fetching
+- `lib/api/open-meteo.ts` - Add forecast endpoint
+- `components/layout/Sidebar.tsx` - Add forecast toggle/view
+
+**Dependencies**: Requires Phase 8B (date selection)
+
+**Benefits**:
+- Plan shoots days in advance
+- Identify best weather windows
+- Compare conditions across multiple days
+
+---
+
+#### Phase 8D: User Preferences & Settings (✅ COMPLETED)
+
+**Goal**: Allow users to customize their experience and save preferences.
+
+**Tasks**:
+- [x] Create settings page/dialog
+- [x] Add theme toggle (light/dark/system) - next-themes already installed
+- [x] Add units preference (metric/imperial)
+- [x] Add default radius preference
+- [ ] Add notification preferences (deferred to future phase)
+- [x] Store preferences in localStorage (Supabase sync deferred)
+
+**Files Created**: 4 new files
+- `components/settings/SettingsDialog.tsx` - Full settings dialog UI
+- `components/settings/ThemeToggle.tsx` - Theme switcher (light/dark/system)
+- `components/ui/switch.tsx` - shadcn/ui Switch component
+- `src/stores/settingsStore.ts` - Zustand store with localStorage persistence
+
+**Files Modified**: 3 files
+- `app/layout.tsx` - ThemeProvider from next-themes configured
+- `components/layout/AppShell.tsx` - Settings button added to header
+- `components/layout/Sidebar.tsx` - Using settings for unit formatting
+
+**Key Features**:
+- Theme selection (light/dark/system) via next-themes
+- Unit system preferences (metric/imperial)
+- Temperature unit (celsius/fahrenheit)
+- Distance unit (km/miles)
+- Speed unit (km/h/mph)
+- Default radius preference
+- UI preferences (show coordinates, compact mode)
+- All settings persist to localStorage
+- Unit conversion utility functions in settingsStore
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (167/167) | ✅ build
+
+**Benefits**:
+- Personalized experience
+- Better accessibility (theme control)
+- User control over defaults
+
+---
+
+#### Phase 8E: Location Organization & Collections (Medium Priority)
+
+**Goal**: Better organization of saved locations with collections/folders.
+
+**Tasks**:
+- [ ] Add collections/folders concept
+- [ ] Allow grouping locations into collections
+- [ ] Add collection management UI
+- [ ] Filter locations by collection
+- [ ] Add collection colors/icons
+
+**Files to Create**:
+- `components/locations/CollectionManager.tsx` - Collection CRUD
+- `components/locations/CollectionFilter.tsx` - Filter by collection
+- `src/stores/collectionStore.ts` - Collection state
+
+**Files to Modify**:
+- `supabase/migrations/` - Add collections table
+- `components/locations/SavedLocationsList.tsx` - Add collection grouping
+- `components/map/SavedLocationMarkers.tsx` - Color by collection
+
+**Database Migration**:
+```sql
+CREATE TABLE collections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  color TEXT,
+  icon TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE locations ADD COLUMN collection_id UUID REFERENCES collections(id);
+```
+
+**Benefits**:
+- Better organization for users with many locations
+- Group by trip, region, or theme
+- Easier location discovery
+
+---
+
+#### Phase 8F: Location Notes & Annotations (Medium Priority)
+
+**Goal**: Allow users to add notes, tips, and annotations to saved locations.
+
+**Tasks**:
+- [ ] Add notes field to location edit form
+- [ ] Show notes in location card
+- [ ] Add rich text support (optional, start with plain text)
+- [ ] Add "last visited" date tracking
+- [ ] Add "best time to visit" notes
+
+**Files to Modify**:
+- `components/locations/EditLocationForm.tsx` - Add notes textarea
+- `components/locations/LocationCard.tsx` - Display notes
+- `supabase/migrations/` - Enhance description field or add notes column
+
+**Benefits**:
+- Capture location-specific tips
+- Remember why location was saved
+- Share knowledge with self/future self
+
+---
+
+#### Phase 8G: Share & Export Functionality (Low Priority)
+
+**Goal**: Allow users to share locations or export their data.
+
+**Tasks**:
+- [ ] Add "Share Location" button
+- [ ] Generate shareable link with location data
+- [ ] Export locations to JSON/GPX
+- [ ] Add "Copy coordinates" quick action
+- [ ] Generate printable location cards
+
+**Files to Create**:
+- `components/locations/ShareLocationDialog.tsx` - Share UI
+- `lib/utils/export.ts` - Export utilities (JSON, GPX)
+- `app/share/[locationId]/route.ts` - Shareable link handler
+
+**Files to Modify**:
+- `components/locations/LocationCard.tsx` - Add share button
+- `components/layout/Sidebar.tsx` - Add export button
+
+**Benefits**:
+- Share locations with others
+- Backup user data
+- Integration with other tools (GPX for GPS devices)
+
+---
+
+#### Phase 8H: Onboarding & Feature Discovery (Medium Priority)
+
+**Goal**: Guide new users through key features.
+
+**Tasks**:
+- [ ] Create onboarding flow component
+- [ ] Add tooltips for first-time feature use
+- [ ] Add "Getting Started" guide
+- [ ] Add keyboard shortcuts help
+- [ ] Track onboarding completion
+
+**Files to Create**:
+- `components/onboarding/OnboardingFlow.tsx` - Multi-step onboarding
+- `components/onboarding/FeatureTooltip.tsx` - Contextual tooltips
+- `components/shared/KeyboardShortcuts.tsx` - Shortcuts help dialog
+
+**Files to Modify**:
+- `app/page.tsx` - Check onboarding status
+- `components/layout/AppShell.tsx` - Add help/shortcuts button
+
+**Benefits**:
+- Faster user adoption
+- Reduced confusion
+- Better feature discovery
+
+---
+
+#### Phase 8I: Keyboard Shortcuts (Low Priority)
+
+**Goal**: Power user efficiency with keyboard shortcuts.
+
+**Tasks**:
+- [ ] Add keyboard shortcut handler hook
+- [ ] Implement common shortcuts (search, settings, etc.)
+- [ ] Show shortcuts in help dialog
+- [ ] Add shortcut hints in UI
+
+**Files to Create**:
+- `src/hooks/useKeyboardShortcuts.ts` - Shortcut handler
+- `components/shared/KeyboardShortcuts.tsx` - Shortcuts reference
+
+**Files to Modify**:
+- `components/layout/AppShell.tsx` - Wire up shortcuts
+- `components/map/MapView.tsx` - Map-specific shortcuts
+
+**Shortcuts to Implement**:
+- `/` - Focus search
+- `?` - Show shortcuts
+- `s` - Open settings
+- `Esc` - Close dialogs
+- Arrow keys - Pan map (when map focused)
+
+**Benefits**:
+- Faster workflow for power users
+- Better accessibility
+- Professional feel
+
+---
+
+#### Phase 8J: Location History & Recently Viewed (Low Priority)
+
+**Goal**: Track and display recently viewed locations.
+
+**Tasks**:
+- [ ] Store location view history in localStorage
+- [ ] Show "Recently Viewed" section in sidebar
+- [ ] Add "Clear History" option
+- [ ] Limit to last 10 locations
+
+**Files to Create**:
+- `src/hooks/useLocationHistory.ts` - History management
+- `components/locations/RecentlyViewed.tsx` - History display
+
+**Files to Modify**:
+- `components/layout/Sidebar.tsx` - Add recently viewed section
+- `components/map/MapView.tsx` - Track location views
+
+**Benefits**:
+- Quick access to recent locations
+- Better navigation flow
+- Reduces repetitive searching
+
+---
+
+### Implementation Priority
+
+#### Phase 8.1 (High Impact, Quick Wins) ✅ COMPLETE
+1. **8A: Location Search** - ✅ Complete
+2. **8B: Date/Time Selection** - ✅ Complete
+3. **8D: User Preferences & Settings** - ✅ Complete
+
+#### Phase 8.2 (High Impact, Medium Effort) - NEXT
+4. **8C: Multi-Day Forecast** - Major value add
+5. **8E: Collections** - Better organization
+6. **8F: Location Notes** - Enhanced utility
+
+#### Phase 8.3 (Polish & Power Features)
+7. **8H: Onboarding** - Better first experience
+8. **8I: Keyboard Shortcuts** - Power users
+9. **8J: Location History** - Convenience
+10. **8G: Share & Export** - Nice to have
+
+---
+
+### Technical Considerations
+
+#### Dependencies to Add
+- `date-fns` or `dayjs` - Date manipulation (if not already present)
+- `react-day-picker` - Date picker component (shadcn/ui compatible)
+- Nominatim API - Free geocoding (no key required)
+
+#### Performance
+- Cache geocoding results (localStorage)
+- Lazy load forecast data
+- Debounce search input
+
+#### Accessibility
+- Ensure all new components are keyboard accessible
+- Add ARIA labels
+- Test with screen readers
+
+#### Testing
+- Add tests for new components
+- Test date/time selection edge cases
+- Test search with various inputs
+
+---
+
+### Success Metrics
+
+- **Location Search**: 80%+ of users use search within first session
+- **Date Selection**: 50%+ of users plan for future dates
+- **Forecast**: Users check forecast 3+ days ahead regularly
+- **Settings**: Theme toggle used by 30%+ of users
+- **Collections**: Users with 10+ locations create collections
+
+---
+
+### Validation Steps
+After each sub-phase:
+```bash
+npm run typecheck && npm run lint && npm run test
+```
 
 ---
 
 ## 🚀 Post-MVP Enhancements (Future Work)
 
 - Weather alerts and push notifications
-- Multi-day weather forecasts
 - Community photo spots and sharing
 - Photo upload and location tagging
 - Deployment to Vercel
+- Advanced route planning between locations
+- Location comparison mode
 
 ---
 
 **Plan Created**: 2026-01-04
 **Plan Location**: `D:\Cursor\photoscout\PLAN.md`
-**Detailed Plan**: `C:\Users\iwatt\.claude\plans\composed-percolating-deer.md`
+**Last Updated**: 2026-01-17
