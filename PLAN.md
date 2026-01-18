@@ -11,10 +11,10 @@
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
-| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 95% |
+| **Phase 8: UX & Feature Enhancements** | ✅ Complete | 100% |
 
 **Last Updated**: 2026-01-18
-**Current Phase**: Phase 8J Complete - Location History & Recently Viewed ✅
+**Current Phase**: Phase 8G Complete - Share & Export Functionality ✅
 
 ---
 
@@ -1060,25 +1060,37 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 
 ---
 
-#### Phase 8G: Share & Export Functionality (Low Priority)
+#### Phase 8G: Share & Export Functionality (✅ COMPLETED)
 
 **Goal**: Allow users to share locations or export their data.
 
 **Tasks**:
-- [ ] Add "Share Location" button
-- [ ] Generate shareable link with location data
-- [ ] Export locations to JSON/GPX
-- [ ] Add "Copy coordinates" quick action
-- [ ] Generate printable location cards
+- [x] Add "Share Location" button
+- [x] Generate shareable link with location data
+- [x] Export locations to JSON/GPX
+- [x] Add "Copy coordinates" quick action
+- [ ] Generate printable location cards (deferred)
 
-**Files to Create**:
-- `components/locations/ShareLocationDialog.tsx` - Share UI
-- `lib/utils/export.ts` - Export utilities (JSON, GPX)
-- `app/share/[locationId]/route.ts` - Shareable link handler
+**Files Created**: 4 new files
+- `lib/utils/export.ts` - Export utilities (JSON, GPX, clipboard, file download)
+- `components/locations/ShareLocationDialog.tsx` - Share dialog with copy, export, and external map links
+- `app/share/page.tsx` - Shareable link page with Suspense wrapper
+- `app/share/SharePageContent.tsx` - Share page content component
 
-**Files to Modify**:
-- `components/locations/LocationCard.tsx` - Add share button
-- `components/layout/Sidebar.tsx` - Add export button
+**Files Modified**: 2 files
+- `components/locations/LocationCard.tsx` - Added Share and Copy Coordinates menu items
+- `components/locations/SavedLocationsList.tsx` - Added Export dropdown (JSON/GPX)
+
+**Key Features**:
+- Share dialog with copy link, coordinates (decimal & DMS), and export options
+- External map links (Google Maps, OpenStreetMap)
+- Single location export (JSON/GPX) from share dialog
+- Bulk export all locations (JSON/GPX) from saved locations header
+- Copy coordinates to clipboard with one click
+- Shareable URL with lat/lng/name parameters
+- Share page that displays location and allows opening in app
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180) | ✅ build
 
 **Benefits**:
 - Share locations with others
@@ -1215,9 +1227,9 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 7. **8H: Onboarding** - ✅ Complete
 8. **8I: Keyboard Shortcuts** - ✅ Complete (merged with 8H)
 
-#### Phase 8.4 (Nice to Have) ✅ MOSTLY COMPLETE
+#### Phase 8.4 (Nice to Have) ✅ COMPLETE
 9. **8J: Location History** - ✅ Complete
-10. **8G: Share & Export** - Remaining (low priority)
+10. **8G: Share & Export** - ✅ Complete
 
 ---
 

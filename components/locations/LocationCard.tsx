@@ -12,17 +12,22 @@ import {
   Clock,
   Calendar,
   FileText,
+  Share2,
+  Copy,
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { deleteLocationAction } from '@/app/actions/locations';
 import { useLocationStore } from '@/src/stores/locationStore';
 import { useMapStore } from '@/src/stores/mapStore';
 import { CollectionBadge } from './CollectionBadge';
+import { ShareLocationDialog } from './ShareLocationDialog';
+import { copyToClipboard, formatCoordinates } from '@/lib/utils/export';
 import { toast } from 'sonner';
 import type { SavedLocation } from '@/src/stores/locationStore';
 
@@ -58,6 +63,7 @@ interface LocationCardProps {
 
 export function LocationCard({ location, onEdit }: LocationCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const removeLocation = useLocationStore((state) => state.removeLocation);
   const setCenter = useMapStore((state) => state.setCenter);
   const setSelectedLocation = useMapStore((state) => state.setSelectedLocation);
@@ -125,6 +131,18 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
       setSelectedLocation({ lat: coords.lat, lng: coords.lng });
       setZoom(14); // Zoom in to see the location
       toast.success('Location centered on map');
+    }
+  };
+
+  const handleCopyCoordinates = async () => {
+    if (coords) {
+      const coordString = formatCoordinates(coords.lat, coords.lng, 'decimal');
+      const success = await copyToClipboard(coordString);
+      if (success) {
+        toast.success('Coordinates copied to clipboard');
+      } else {
+        toast.error('Failed to copy coordinates');
+      }
     }
   };
 
@@ -233,6 +251,15 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShareDialogOpen(true)}>
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCopyCoordinates}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy Coordinates
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleDelete}
               className="text-destructive focus:text-destructive"
@@ -243,6 +270,12 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <ShareLocationDialog
+        location={location}
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+      />
     </Card>
   );
 }

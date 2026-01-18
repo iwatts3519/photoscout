@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { LocationCard } from './LocationCard';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPinned } from 'lucide-react';
+import { Loader2, MapPinned, Download, FileJson, FileText } from 'lucide-react';
 import { fetchUserLocations } from '@/app/actions/locations';
 import { fetchUserCollections } from '@/app/actions/collections';
 import { useLocationStore } from '@/src/stores/locationStore';
@@ -19,7 +19,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { EditLocationForm } from './EditLocationForm';
+import { exportToJSON, exportToGPX, downloadFile, generateFilename } from '@/lib/utils/export';
 import type { SavedLocation } from '@/src/stores/locationStore';
 
 export function SavedLocationsList() {
@@ -82,6 +89,28 @@ export function SavedLocationsList() {
     loadData();
   };
 
+  const handleExportJSON = () => {
+    if (savedLocations.length === 0) {
+      toast.error('No locations to export');
+      return;
+    }
+    const json = exportToJSON(savedLocations);
+    const filename = generateFilename('photoscout-locations', 'json');
+    downloadFile(json, filename, 'application/json');
+    toast.success(`Exported ${savedLocations.length} locations to JSON`);
+  };
+
+  const handleExportGPX = () => {
+    if (savedLocations.length === 0) {
+      toast.error('No locations to export');
+      return;
+    }
+    const gpx = exportToGPX(savedLocations);
+    const filename = generateFilename('photoscout-locations', 'gpx');
+    downloadFile(gpx, filename, 'application/gpx+xml');
+    toast.success(`Exported ${savedLocations.length} locations to GPX`);
+  };
+
   // Filter locations based on selected collection
   const filteredLocations = selectedCollectionId
     ? selectedCollectionId === 'uncategorized'
@@ -123,6 +152,30 @@ export function SavedLocationsList() {
           <div className="flex items-center gap-1">
             {collections.length > 0 && <CollectionFilter />}
             <CollectionManager />
+            {savedLocations.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    title="Export all locations"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportJSON}>
+                    <FileJson className="mr-2 h-4 w-4" />
+                    Export as JSON
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportGPX}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Export as GPX
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Button
               variant="ghost"
               size="sm"
