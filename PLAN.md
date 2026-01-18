@@ -11,10 +11,10 @@
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
-| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 50% |
+| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 63% |
 
-**Last Updated**: 2026-01-17
-**Current Phase**: Phase 8C Complete - Multi-Day Weather Forecast ✅
+**Last Updated**: 2026-01-18
+**Current Phase**: Phase 8E Complete - Location Organization & Collections ✅
 
 ---
 
@@ -967,45 +967,57 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 
 ---
 
-#### Phase 8E: Location Organization & Collections (Medium Priority)
+#### Phase 8E: Location Organization & Collections (✅ COMPLETED)
 
 **Goal**: Better organization of saved locations with collections/folders.
 
 **Tasks**:
-- [ ] Add collections/folders concept
-- [ ] Allow grouping locations into collections
-- [ ] Add collection management UI
-- [ ] Filter locations by collection
-- [ ] Add collection colors/icons
+- [x] Add collections/folders concept
+- [x] Allow grouping locations into collections
+- [x] Add collection management UI
+- [x] Filter locations by collection
+- [x] Add collection colors/icons (8-color palette)
 
-**Files to Create**:
-- `components/locations/CollectionManager.tsx` - Collection CRUD
-- `components/locations/CollectionFilter.tsx` - Filter by collection
-- `src/stores/collectionStore.ts` - Collection state
+**Files Created**: 9 new files
+- `supabase/migrations/20260118000001_add_collections.sql` - Collections table with RLS
+- `src/stores/collectionStore.ts` - Zustand store with predefined color palette
+- `src/stores/collectionStore.test.ts` - 13 unit tests for collection store
+- `lib/queries/collections.ts` - Database CRUD queries
+- `app/actions/collections.ts` - Server actions with Zod validation
+- `components/locations/CollectionBadge.tsx` - Colored badge showing collection name
+- `components/locations/CollectionSelector.tsx` - Dropdown for forms
+- `components/locations/CollectionFilter.tsx` - Filter dropdown for list
+- `components/locations/CollectionManager.tsx` - Full CRUD dialog
 
-**Files to Modify**:
-- `supabase/migrations/` - Add collections table
-- `components/locations/SavedLocationsList.tsx` - Add collection grouping
-- `components/map/SavedLocationMarkers.tsx` - Color by collection
+**Files Modified**: 8 files
+- `src/types/database.ts` - Regenerated with collections table
+- `components/locations/SaveLocationForm.tsx` - Added CollectionSelector
+- `components/locations/EditLocationForm.tsx` - Added CollectionSelector
+- `components/locations/SavedLocationsList.tsx` - Added filter, manager, parallel data loading
+- `components/locations/LocationCard.tsx` - Added CollectionBadge display
+- `components/map/SavedLocationMarkers.tsx` - Colored markers by collection
+- `app/actions/locations.ts` - Added collection_id support
+- `lib/queries/locations.ts` - Added collection_id to queries
 
-**Database Migration**:
-```sql
-CREATE TABLE collections (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  color TEXT,
-  icon TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+**Key Features**:
+- Create/edit/delete collections with 8 predefined colors
+- Assign locations to collections when saving or editing
+- Filter saved locations by collection or "uncategorized"
+- Collection badge on location cards
+- Map markers colored by collection assignment
+- Parallel loading of locations and collections
 
-ALTER TABLE locations ADD COLUMN collection_id UUID REFERENCES collections(id);
-```
+**Color Palette**:
+- Green (#10b981), Blue (#3b82f6), Purple (#8b5cf6), Pink (#ec4899)
+- Red (#ef4444), Orange (#f97316), Yellow (#eab308), Teal (#14b8a6)
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180 passing) | ✅ build
 
 **Benefits**:
 - Better organization for users with many locations
 - Group by trip, region, or theme
 - Easier location discovery
+- Visual distinction on map with colored markers
 
 ---
 
@@ -1152,8 +1164,8 @@ ALTER TABLE locations ADD COLUMN collection_id UUID REFERENCES collections(id);
 
 #### Phase 8.2 (High Impact, Medium Effort) - IN PROGRESS
 4. **8C: Multi-Day Forecast** - ✅ Complete
-5. **8E: Collections** - Better organization (NEXT)
-6. **8F: Location Notes** - Enhanced utility
+5. **8E: Collections** - ✅ Complete
+6. **8F: Location Notes** - Enhanced utility (NEXT)
 
 #### Phase 8.3 (Polish & Power Features)
 7. **8H: Onboarding** - Better first experience
@@ -1218,4 +1230,4 @@ npm run typecheck && npm run lint && npm run test
 
 **Plan Created**: 2026-01-04
 **Plan Location**: `D:\Cursor\photoscout\PLAN.md`
-**Last Updated**: 2026-01-17
+**Last Updated**: 2026-01-18
