@@ -12,9 +12,10 @@
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
 | **Phase 8: UX & Feature Enhancements** | ✅ Complete | 100% |
+| **Phase 9: Sidebar UI/UX Improvement** | 🔄 In Progress | 60% |
 
 **Last Updated**: 2026-01-18
-**Current Phase**: Phase 8G Complete - Share & Export Functionality ✅
+**Current Phase**: Phase 9C Complete - Floating Location Card
 
 ---
 
@@ -1272,6 +1273,366 @@ After each sub-phase:
 ```bash
 npm run typecheck && npm run lint && npm run test
 ```
+
+---
+
+## 🔄 Phase 9: Sidebar UI/UX Improvement (IN PROGRESS)
+
+### Goal
+Transform the cluttered sidebar into a minimal action panel with floating cards on the map (Google Maps style). Move detailed information to floating cards while keeping essential actions in a streamlined sidebar.
+
+### Design Overview
+
+**Layout**: Floating Cards + Minimal Sidebar
+**Always Visible**: Search + Weather summary
+
+```
+┌──────────────┬─────────────────────────────────────────────────┐
+│  SIDEBAR     │                                                 │
+│  (Minimal)   │    ┌─────────────────┐                          │
+│              │    │ Weather Card    │    [Zoom] [Locate]       │
+│ [🔍 Search]  │    │ Detailed view   │                          │
+│              │    └─────────────────┘                          │
+│ ┌──────────┐ │                                                 │
+│ │☀️ 12°C   │ │                  MAP                            │
+│ │Golden Hr │ │                                                 │
+│ └──────────┘ │                                                 │
+│              │                         ┌───────────────────┐   │
+│ [Radius]     │                         │ Location Card     │   │
+│ [DateTime]   │                         │ POIs, Photos      │   │
+│ [POI Filter] │                         └───────────────────┘   │
+│              │                                                 │
+│ ─────────────│  ┌─────────────────────────────────────────┐    │
+│ [Saved]      │  │ Bottom Sheet: Full Details (expandable) │    │
+│ [Recent]     │  └─────────────────────────────────────────┘    │
+└──────────────┴─────────────────────────────────────────────────┘
+```
+
+### Sub-Phases
+
+---
+
+#### Phase 9A: Refactor Sidebar to Minimal Layout (✅ COMPLETED)
+
+**Goal**: Reduce sidebar to essential actions with compact weather summary.
+
+**New Sidebar Structure**:
+```
+┌─────────────────────────────────┐
+│ [Location Search]               │  ← Always visible
+├─────────────────────────────────┤
+│ ┌─────────────────────────────┐ │
+│ │ ☀️ 12°C  Partly Cloudy      │ │  ← Compact weather summary
+│ │ 🌅 Golden: 16:32 - 17:15    │ │     (clickable to expand)
+│ │ 📸 Score: 72/100            │ │
+│ └─────────────────────────────┘ │
+├─────────────────────────────────┤
+│ Search Radius: [====] 2km       │  ← Compact slider
+│ Date/Time: [📅 Jan 18, 16:00]   │  ← Inline picker
+├─────────────────────────────────┤
+│ POI Filters: [🅿️][☕][👁️][🚻][ℹ️] │  ← Icon-only toggles
+├─────────────────────────────────┤
+│ 💾 Saved Locations (3)     [+]  │  ← Collapsed list
+│ 🕐 Recently Viewed (5)     [+]  │  ← Collapsed list
+└─────────────────────────────────┘
+```
+
+**Tasks**:
+- [x] Create `WeatherSummary` component (compact 3-line display)
+- [x] Refactor `Sidebar.tsx` to minimal layout
+- [x] Remove full weather cards from sidebar
+- [x] Create icon-only `POIFiltersCompact` component
+- [x] Make Saved/Recent lists collapsible by default
+- [x] Remove POI list from sidebar (moves to floating card)
+- [x] Create UI store for floating card state
+
+**Files Created**:
+- `components/weather/WeatherSummary.tsx` - Compact 3-line weather display (temp, golden hour, score)
+- `components/map/POIFiltersCompact.tsx` - Icon-only POI filter toggles with tooltips
+- `components/ui/tooltip.tsx` - shadcn/ui Tooltip component
+- `src/stores/uiStore.ts` - UI state store for floating cards and sidebar sections
+
+**Files Modified**:
+- `components/layout/Sidebar.tsx` - Major refactor to minimal layout
+
+**Key Features**:
+- WeatherSummary shows temperature + condition, next golden hour time, photography score
+- WeatherSummary is clickable (will open floating card in Phase 9B)
+- POIFiltersCompact uses icon-only buttons with tooltips
+- Saved Locations and Recently Viewed are now collapsible, collapsed by default
+- Removed: Full weather cards, sun times card, conditions score card, nearby photos, POI list
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180 passing)
+
+---
+
+#### Phase 9B: Create Floating Weather Card (✅ COMPLETED)
+
+**Goal**: Detailed weather info in a floating card on the map.
+
+**Position**: Top-left of map area (below any mobile menu button)
+
+**Tasks**:
+- [x] Create `FloatingWeatherCard` component
+- [x] Add floating card container to `MapView`
+- [x] Implement open/close behavior from weather summary click
+- [x] Add current weather tab content
+- [x] Add 7-day forecast tab content
+- [x] Add close button and outside click handling
+
+**Files Created**:
+- `components/map/FloatingWeatherCard.tsx` - Detailed weather floating card with tabs
+- `components/ui/tabs.tsx` - shadcn/ui Tabs component
+
+**Files Modified**:
+- `components/map/MapView.tsx` - Added FloatingWeatherCard component
+
+**Key Features**:
+- Tabs for "Current" weather and "7-Day" forecast
+- Current tab shows: temperature, feels like, sun times, golden hours, blue hours, cloud cover, visibility, wind, humidity
+- Photography score with breakdown (lighting, weather, visibility)
+- Next golden hour countdown
+- 7-Day tab lazy-loads forecast data and reuses WeatherForecastCard
+- Click outside to close, Escape key to close
+- Smooth slide-in animation
+- Positioned top-left of map area
+
+**Behavior**:
+- Opens when clicking weather summary in sidebar
+- Can be closed with X button or clicking outside
+- Shows current weather by default, tab to 7-day forecast
+- Forecast data is lazy-loaded when tab is first opened
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180 passing)
+
+---
+
+#### Phase 9C: Create Floating Location Card (✅ COMPLETED)
+
+**Goal**: Show selected location details + nearby content near the pin.
+
+**Position**: Bottom-right of map (near selected location)
+
+```
+┌─────────────────────────────────┐
+│ 📍 Selected Location       [✕]  │
+│ 51.5074°N, 0.1278°W             │
+├─────────────────────────────────┤
+│ Nearby POIs (12)           [▶]  │
+│ 🅿️ Parking (3) ☕ Cafe (2)      │
+├─────────────────────────────────┤
+│ 📸 Nearby Photos (8)       [▶]  │
+│ [thumb] [thumb] [thumb] [+5]    │
+├─────────────────────────────────┤
+│ [💾 Save Location]              │
+└─────────────────────────────────┘
+```
+
+**Tasks**:
+- [x] Create `FloatingLocationCard` component
+- [x] Move POI summary logic to floating card
+- [x] Move photo thumbnails to floating card
+- [x] Add photo gallery expand functionality (opens PhotoDialog)
+- [x] Add quick save button with inline form
+
+**Files Created**:
+- `components/map/FloatingLocationCard.tsx` - Location details floating card
+
+**Files Modified**:
+- `components/map/MapView.tsx` - Added FloatingLocationCard component
+
+**Key Features**:
+- Auto-opens when a location is selected on the map
+- Shows coordinates formatted as "51.5074°N, 0.1278°W"
+- POI summary with colored badges grouped by type
+- Photo thumbnails (first 3 + remaining count) with click to open PhotoDialog
+- Quick save button with inline name input for authenticated users
+- Click outside or Escape key to close
+- Debounced photo fetching (500ms) to prevent API spam
+- Smooth slide-in-from-right animation
+- Wikimedia Commons attribution link
+
+**Behavior**:
+- Appears when a location is selected on the map
+- Click photo thumbnails to open full-size PhotoDialog
+- Save button shows inline input for quick location naming
+- Click outside to close, Escape key to close
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180 passing)
+
+---
+
+#### Phase 9D: Create Bottom Sheet for Expanded Content (PLANNED)
+
+**Goal**: Full-screen expandable panel for detailed lists (POIs, photos, forecasts).
+
+**Trigger**: Click "expand" on floating cards or sidebar sections.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ═══════════════════════════ [drag handle]                   │
+├─────────────────────────────────────────────────────────────┤
+│ Nearby Points of Interest                              [✕]  │
+├─────────────────────────────────────────────────────────────┤
+│ 🅿️ PARKING (3)                                              │
+│   • Car Park A - 0.2 km                                     │
+│   • Street Parking - 0.4 km                                 │
+│   • Multi-storey - 0.8 km                                   │
+│                                                             │
+│ ☕ CAFES (2)                                                 │
+│   • The Coffee House - 0.3 km                               │
+│   • Bean & Leaf - 0.6 km                                    │
+│                                                             │
+│ ...                                                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Tasks**:
+- [ ] Create reusable `BottomSheet` component
+- [ ] Implement three states: collapsed, peek, expanded
+- [ ] Create `POIBottomSheet` with grouped POI content
+- [ ] Create `PhotosBottomSheet` with photo gallery
+- [ ] Create `ForecastBottomSheet` with 7-day details
+- [ ] Add swipe gestures for expand/collapse
+- [ ] Add click outside to close
+
+**Files to Create**:
+- `components/layout/BottomSheet.tsx` - Reusable expandable sheet
+- `components/poi/POIBottomSheet.tsx` - POI-specific content
+- `components/weather/ForecastBottomSheet.tsx` - 7-day forecast
+- `components/photos/PhotosBottomSheet.tsx` - Photo gallery
+
+**Behavior**:
+- Three states: collapsed (hidden), peek (partial), expanded (full)
+- Swipe up to expand, down to collapse
+- Click outside to close
+- Desktop: Can use Dialog instead or side panel
+
+---
+
+#### Phase 9E: Mobile Adaptations (PLANNED)
+
+**Goal**: Ensure floating cards work well on small screens.
+
+**Mobile Layout**:
+```
+┌─────────────────────────────────┐
+│ [≡]  ☀️ 12°C | Golden: 16:32    │  ← Top bar (weather summary)
+├─────────────────────────────────┤
+│                                 │
+│              MAP                │
+│                                 │
+├─────────────────────────────────┤
+│ 📍 Location | 🅿️ 3 | 📸 8  [▲]  │  ← Bottom peek bar
+└─────────────────────────────────┘
+```
+
+**Tasks**:
+- [ ] Create `MobileWeatherBar` component (compact top bar)
+- [ ] Create `MobileBottomPeek` component (bottom summary bar)
+- [ ] Update `AppShell` with mobile-specific layouts
+- [ ] Add responsive breakpoints to floating cards
+- [ ] Ensure bottom sheet is primary detail view on mobile
+- [ ] Test all interactions on touch devices
+
+**Files to Create**:
+- `components/mobile/MobileWeatherBar.tsx` - Mobile top bar
+- `components/mobile/MobileBottomPeek.tsx` - Mobile bottom peek bar
+
+**Files to Modify**:
+- `components/layout/AppShell.tsx` - Add mobile top bar, responsive logic
+
+---
+
+### File Changes Summary
+
+#### New Files
+| File | Purpose |
+|------|---------|
+| `components/weather/WeatherSummary.tsx` | Compact 3-line weather display |
+| `components/map/FloatingWeatherCard.tsx` | Detailed weather floating card |
+| `components/map/FloatingLocationCard.tsx` | Location + POI + photos card |
+| `components/layout/BottomSheet.tsx` | Reusable expandable bottom sheet |
+| `components/poi/POIBottomSheet.tsx` | POI-specific bottom sheet content |
+| `components/weather/ForecastBottomSheet.tsx` | 7-day forecast bottom sheet |
+| `components/photos/PhotosBottomSheet.tsx` | Photo gallery bottom sheet |
+| `components/mobile/MobileWeatherBar.tsx` | Mobile top bar with weather |
+| `components/mobile/MobileBottomPeek.tsx` | Mobile bottom peek bar |
+
+#### Modified Files
+| File | Changes |
+|------|---------|
+| `components/layout/Sidebar.tsx` | Remove weather/POI details, add summary |
+| `components/layout/AppShell.tsx` | Add floating card containers, mobile bars |
+| `components/map/MapView.tsx` | Add floating card positioning layer |
+| `components/map/POIFilters.tsx` | Convert to icon-only compact mode |
+
+---
+
+### Component Hierarchy
+
+```
+AppShell
+├── Sidebar (desktop) / Sheet (mobile)
+│   ├── LocationSearch
+│   ├── WeatherSummary (NEW - clickable)
+│   ├── RadiusSlider (compact)
+│   ├── DateTimePicker (inline)
+│   ├── POIFilters (icons only)
+│   ├── SavedLocationsList (collapsed)
+│   └── RecentlyViewed (collapsed)
+│
+├── MapContainer
+│   ├── MapView
+│   ├── FloatingWeatherCard (NEW - top-left)
+│   ├── FloatingLocationCard (NEW - bottom-right)
+│   ├── MapControls (existing - top-right)
+│   └── BottomSheet (NEW - expandable)
+│
+└── MobileWeatherBar (NEW - mobile only)
+```
+
+---
+
+### Validation Steps
+
+After each sub-phase:
+```bash
+npm run typecheck && npm run lint && npm run test
+```
+
+**Verification Checklist**:
+1. **Visual check**: Sidebar fits without scrolling on 768px height viewport
+2. **Weather flow**: Click summary → floating card opens → click 7-day → bottom sheet expands
+3. **Location flow**: Click map → location card appears → shows POIs/photos → click to expand
+4. **Mobile test**: Test on 375px width - all content accessible via bottom sheet
+5. **Existing features**: All current functionality preserved, just reorganized
+6. **Performance**: Floating cards use same data stores, no extra API calls
+
+---
+
+### Risks & Mitigations
+
+| Risk | Mitigation |
+|------|------------|
+| Floating cards obscure map | Add minimize/close buttons, remember state |
+| Too many cards open at once | Limit to 1-2 floating cards, use bottom sheet for details |
+| Mobile complexity | Progressive disclosure, bottom sheet as primary mobile pattern |
+| User confusion with new layout | Keep weather summary prominent, clear visual hierarchy |
+
+---
+
+### Success Criteria
+
+- [ ] Sidebar fits on 768px height without scrolling
+- [ ] Weather summary shows temp, condition, golden hour, and score
+- [ ] Clicking weather summary opens floating weather card
+- [ ] Floating location card shows POIs and photos for selected location
+- [ ] Bottom sheet expands to show full details
+- [ ] Mobile layout uses top bar + bottom peek pattern
+- [ ] All existing functionality preserved
+- [ ] All tests pass
+- [ ] Production build succeeds
 
 ---
 

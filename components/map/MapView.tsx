@@ -11,6 +11,8 @@ import { MapControls } from './MapControls';
 import { RadiusOverlay } from './RadiusOverlay';
 import { SavedLocationMarkers } from './SavedLocationMarkers';
 import { POILayer } from './POILayer';
+import { FloatingWeatherCard } from './FloatingWeatherCard';
+import { FloatingLocationCard } from './FloatingLocationCard';
 
 const MAP_STYLE = {
   version: 8,
@@ -185,6 +187,10 @@ export function MapView() {
       />
 
       <POILayer map={mapInstance} />
+
+      {/* Floating Cards Container */}
+      <FloatingWeatherCard />
+      <FloatingLocationCard />
     </div>
   );
 }

@@ -33,6 +33,9 @@ git push origin main                   # Push to GitHub
 git pull origin main                   # Pull latest changes
 ```
 
+## Planning
+When you are adding new features to PLAN.md, add each feature as a new phase, numbered, for example Phase 1, Phase 2 etc. Do not add new features as Phase 1.1, 1.2 etc. Every new feature should have its own phase 
+
 ## Git Workflow
 
 ### Repository
