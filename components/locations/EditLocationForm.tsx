@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Save } from 'lucide-react';
 import { updateLocationAction } from '@/app/actions/locations';
 import { useLocationStore } from '@/src/stores/locationStore';
+import { useCollectionStore } from '@/src/stores/collectionStore';
+import { CollectionSelector } from './CollectionSelector';
 import { toast } from 'sonner';
 import type { SavedLocation } from '@/src/stores/locationStore';
 
@@ -33,12 +35,16 @@ export function EditLocationForm({
   const [tags, setTags] = useState(
     location.tags ? location.tags.join(', ') : ''
   );
+  const [collectionId, setCollectionId] = useState<string | null>(
+    location.collection_id || null
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const updateLocationInStore = useLocationStore(
     (state) => state.updateLocation
   );
+  const collections = useCollectionStore((state) => state.collections);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +76,7 @@ export function EditLocationForm({
         name: result.data.name,
         description: result.data.description || undefined,
         tags: tagArray.length > 0 ? tagArray : undefined,
+        collection_id: collectionId,
       });
 
       if (error) {
@@ -86,6 +93,7 @@ export function EditLocationForm({
           name: data.name,
           description: data.description,
           tags: data.tags,
+          collection_id: data.collection_id,
         });
 
         // Show success message
@@ -161,6 +169,17 @@ export function EditLocationForm({
         />
         {errors.tags && <p className="text-sm text-destructive">{errors.tags}</p>}
       </div>
+
+      {collections.length > 0 && (
+        <div className="space-y-2">
+          <Label>Collection</Label>
+          <CollectionSelector
+            value={collectionId}
+            onChange={setCollectionId}
+            disabled={isLoading}
+          />
+        </div>
+      )}
 
       <div className="flex gap-2">
         <Button

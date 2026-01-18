@@ -34,8 +34,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      collections: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       locations: {
         Row: {
+          collection_id: string | null
           coordinates: unknown
           created_at: string | null
           description: string | null
@@ -48,6 +82,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          collection_id?: string | null
           coordinates: unknown
           created_at?: string | null
           description?: string | null
@@ -60,6 +95,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          collection_id?: string | null
           coordinates?: unknown
           created_at?: string | null
           description?: string | null
@@ -71,7 +107,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "locations_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -472,6 +516,7 @@ export type Database = {
       locations_near_point: {
         Args: { lat: number; lng: number; radius_meters: number }
         Returns: {
+          collection_id: string | null
           coordinates: unknown
           created_at: string | null
           description: string | null

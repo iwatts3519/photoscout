@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Save, MapPin } from 'lucide-react';
 import { createLocation } from '@/app/actions/locations';
 import { useLocationStore } from '@/src/stores/locationStore';
+import { useCollectionStore } from '@/src/stores/collectionStore';
+import { CollectionSelector } from './CollectionSelector';
 import { toast } from 'sonner';
 
 const locationSchema = z.object({
@@ -30,10 +32,12 @@ export function SaveLocationForm({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
+  const [collectionId, setCollectionId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const addLocation = useLocationStore((state) => state.addLocation);
+  const collections = useCollectionStore((state) => state.collections);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +72,7 @@ export function SaveLocationForm({
         radius_meters: radius,
         tags: tagArray.length > 0 ? tagArray : undefined,
         is_public: false,
+        collection_id: collectionId,
       });
 
       if (error) {
@@ -91,6 +96,7 @@ export function SaveLocationForm({
         setName('');
         setDescription('');
         setTags('');
+        setCollectionId(null);
 
         // Call success callback
         onSuccess?.();
@@ -167,6 +173,17 @@ export function SaveLocationForm({
         />
         {errors.tags && <p className="text-sm text-destructive">{errors.tags}</p>}
       </div>
+
+      {collections.length > 0 && (
+        <div className="space-y-2">
+          <Label>Collection</Label>
+          <CollectionSelector
+            value={collectionId}
+            onChange={setCollectionId}
+            disabled={isLoading}
+          />
+        </div>
+      )}
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? (

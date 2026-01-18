@@ -5,9 +5,13 @@ import { LocationCard } from './LocationCard';
 import { Button } from '@/components/ui/button';
 import { Loader2, MapPinned } from 'lucide-react';
 import { fetchUserLocations } from '@/app/actions/locations';
+import { fetchUserCollections } from '@/app/actions/collections';
 import { useLocationStore } from '@/src/stores/locationStore';
+import { useCollectionStore } from '@/src/stores/collectionStore';
 import { useAuth } from '@/src/hooks/useAuth';
 import { toast } from 'sonner';
+import { CollectionFilter } from './CollectionFilter';
+import { CollectionManager } from './CollectionManager';
 import {
   Dialog,
   DialogContent,
@@ -24,26 +28,37 @@ export function SavedLocationsList() {
   const setSavedLocations = useLocationStore((state) => state.setSavedLocations);
   const isLoading = useLocationStore((state) => state.isLoading);
   const setIsLoading = useLocationStore((state) => state.setIsLoading);
+
+  const collections = useCollectionStore((state) => state.collections);
+  const setCollections = useCollectionStore((state) => state.setCollections);
+  const selectedCollectionId = useCollectionStore(
+    (state) => state.selectedCollectionId
+  );
+
   const [editingLocation, setEditingLocation] = useState<SavedLocation | null>(
     null
   );
 
-  const loadLocations = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await fetchUserLocations();
+      // Load locations and collections in parallel
+      const [locationsResult, collectionsResult] = await Promise.all([
+        fetchUserLocations(),
+        fetchUserCollections(),
+      ]);
 
-      if (error) {
+      if (locationsResult.error) {
         toast.error('Failed to load saved locations', {
-          description: error,
+          description: locationsResult.error,
         });
-        setIsLoading(false);
-        return;
+      } else if (locationsResult.data) {
+        setSavedLocations(locationsResult.data);
       }
 
-      if (data) {
-        setSavedLocations(data);
+      if (collectionsResult.data) {
+        setCollections(collectionsResult.data);
       }
 
       setIsLoading(false);
@@ -54,18 +69,25 @@ export function SavedLocationsList() {
       });
       setIsLoading(false);
     }
-  }, [setIsLoading, setSavedLocations]);
+  }, [setIsLoading, setSavedLocations, setCollections]);
 
-  // Fetch saved locations on mount
+  // Fetch saved locations and collections on mount
   useEffect(() => {
     if (user) {
-      loadLocations();
+      loadData();
     }
-  }, [user, loadLocations]);
+  }, [user, loadData]);
 
   const handleRefresh = () => {
-    loadLocations();
+    loadData();
   };
+
+  // Filter locations based on selected collection
+  const filteredLocations = selectedCollectionId
+    ? selectedCollectionId === 'uncategorized'
+      ? savedLocations.filter((loc) => !loc.collection_id)
+      : savedLocations.filter((loc) => loc.collection_id === selectedCollectionId)
+    : savedLocations;
 
   if (!user) {
     return null;
@@ -94,28 +116,40 @@ export function SavedLocationsList() {
   return (
     <>
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">
-            Saved Locations ({savedLocations.length})
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-medium flex-shrink-0">
+            Saved ({filteredLocations.length})
           </h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRefresh}
-            className="h-7 text-xs"
-          >
-            Refresh
-          </Button>
+          <div className="flex items-center gap-1">
+            {collections.length > 0 && <CollectionFilter />}
+            <CollectionManager />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              className="h-7 text-xs"
+            >
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-2">
-          {savedLocations.map((location) => (
-            <LocationCard
-              key={location.id}
-              location={location}
-              onEdit={setEditingLocation}
-            />
-          ))}
+          {filteredLocations.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              {selectedCollectionId
+                ? 'No locations in this collection'
+                : 'No saved locations'}
+            </p>
+          ) : (
+            filteredLocations.map((location) => (
+              <LocationCard
+                key={location.id}
+                location={location}
+                onEdit={setEditingLocation}
+              />
+            ))
+          )}
         </div>
       </div>
 

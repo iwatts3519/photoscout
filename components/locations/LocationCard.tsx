@@ -19,6 +19,7 @@ import {
 import { deleteLocationAction } from '@/app/actions/locations';
 import { useLocationStore } from '@/src/stores/locationStore';
 import { useMapStore } from '@/src/stores/mapStore';
+import { CollectionBadge } from './CollectionBadge';
 import { toast } from 'sonner';
 import type { SavedLocation } from '@/src/stores/locationStore';
 
@@ -123,6 +124,12 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
             <p className="text-sm text-muted-foreground line-clamp-2 pl-6">
               {location.description}
             </p>
+          )}
+
+          {location.collection_id && (
+            <div className="pl-6">
+              <CollectionBadge collectionId={location.collection_id} />
+            </div>
           )}
 
           {location.tags && location.tags.length > 0 && (

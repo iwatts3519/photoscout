@@ -4,24 +4,31 @@ import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { SavedLocation } from '@/src/stores/locationStore';
 import { useMapStore } from '@/src/stores/mapStore';
+import { useCollectionStore } from '@/src/stores/collectionStore';
 
 interface SavedLocationMarkersProps {
   map: maplibregl.Map | null;
   locations: SavedLocation[];
 }
 
+interface MarkerData {
+  marker: maplibregl.Marker;
+  color: string;
+}
+
 /**
  * Component to render markers for saved locations on the map
- * Uses green markers to distinguish from the blue selected location marker
+ * Uses collection colors when assigned, default green otherwise
  */
 export function SavedLocationMarkers({
   map,
   locations,
 }: SavedLocationMarkersProps) {
-  const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
+  const markersRef = useRef<Map<string, MarkerData>>(new Map());
   const setSelectedLocation = useMapStore((state) => state.setSelectedLocation);
   const setCenter = useMapStore((state) => state.setCenter);
   const setZoom = useMapStore((state) => state.setZoom);
+  const getCollectionColor = useCollectionStore((state) => state.getCollectionColor);
 
   useEffect(() => {
     if (!map) return;
@@ -53,9 +60,9 @@ export function SavedLocationMarkers({
     // Remove markers for locations that no longer exist
     existingIds.forEach((id) => {
       if (!currentIds.has(id)) {
-        const marker = markers.get(id);
-        if (marker) {
-          marker.remove();
+        const markerData = markers.get(id);
+        if (markerData) {
+          markerData.marker.remove();
           markers.delete(id);
         }
       }
@@ -66,12 +73,19 @@ export function SavedLocationMarkers({
       const coords = parseCoordinates(location.coordinates);
       if (!coords) return;
 
-      let marker = markers.get(location.id);
+      const existingData = markers.get(location.id);
+      const markerColor = getCollectionColor(location.collection_id || null);
 
-      if (!marker) {
-        // Create new marker for saved location (green to distinguish from selected location)
-        marker = new maplibregl.Marker({
-          color: '#10b981', // green-500
+      // If marker exists but color changed, recreate it
+      if (existingData && existingData.color !== markerColor) {
+        existingData.marker.remove();
+        markers.delete(location.id);
+      }
+
+      if (!markers.has(location.id)) {
+        // Create new marker with collection color
+        const marker = new maplibregl.Marker({
+          color: markerColor,
           draggable: false,
         })
           .setLngLat([coords.lng, coords.lat])
@@ -102,19 +116,22 @@ export function SavedLocationMarkers({
           setZoom(14);
         });
 
-        markers.set(location.id, marker);
+        markers.set(location.id, { marker, color: markerColor });
       } else {
         // Update existing marker position if coordinates changed
-        marker.setLngLat([coords.lng, coords.lat]);
+        const markerData = markers.get(location.id);
+        if (markerData) {
+          markerData.marker.setLngLat([coords.lng, coords.lat]);
+        }
       }
     });
 
     // Cleanup on unmount - remove all markers
     return () => {
-      markers.forEach((marker) => marker.remove());
+      markers.forEach((data) => data.marker.remove());
       markers.clear();
     };
-  }, [map, locations, setCenter, setSelectedLocation, setZoom]);
+  }, [map, locations, setCenter, setSelectedLocation, setZoom, getCollectionColor]);
 
   return null; // This component doesn't render anything directly
 }
