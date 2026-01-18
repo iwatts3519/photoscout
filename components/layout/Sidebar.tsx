@@ -1,8 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useMapStore } from '@/src/stores/mapStore';
 import { useSettingsStore, formatDistance } from '@/src/stores/settingsStore';
+import {
+  useLocationHistoryStore,
+  formatLocationName,
+} from '@/src/stores/locationHistoryStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +19,7 @@ import { ConditionsScore } from '@/components/weather/ConditionsScore';
 import { SunTimesCard } from '@/components/weather/SunTimesCard';
 import { SaveLocationForm } from '@/components/locations/SaveLocationForm';
 import { SavedLocationsList } from '@/components/locations/SavedLocationsList';
+import { RecentlyViewed } from '@/components/locations/RecentlyViewed';
 import { PhotoGallery } from '@/components/locations/PhotoGallery';
 import { POIFilters } from '@/components/map/POIFilters';
 import { POIList } from '@/components/map/POIList';
@@ -38,6 +43,7 @@ export function Sidebar() {
     resetDateTime,
   } = useMapStore();
   const { showCoordinates, distanceUnit } = useSettingsStore();
+  const { addToHistory } = useLocationHistoryStore();
   const { user } = useAuth();
   const [weather, setWeather] = useState<MetOfficeWeather | null>(null);
   const [forecast, setForecast] = useState<AnalyzedForecast | null>(null);
@@ -46,6 +52,29 @@ export function Sidebar() {
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [forecastError, setForecastError] = useState<string | null>(null);
   const [weatherView, setWeatherView] = useState<'current' | 'forecast'>('current');
+
+  // Track last added location to avoid duplicates
+  const lastAddedLocationRef = useRef<string | null>(null);
+
+  // Add selected location to history
+  useEffect(() => {
+    if (!selectedLocation) return;
+
+    // Create a key for this location
+    const locationKey = `${selectedLocation.lat.toFixed(6)}_${selectedLocation.lng.toFixed(6)}`;
+
+    // Only add if it's a different location from the last one added
+    if (lastAddedLocationRef.current !== locationKey) {
+      lastAddedLocationRef.current = locationKey;
+
+      // Add to history with a formatted name
+      addToHistory({
+        lat: selectedLocation.lat,
+        lng: selectedLocation.lng,
+        name: formatLocationName(selectedLocation.lat, selectedLocation.lng),
+      });
+    }
+  }, [selectedLocation, addToHistory]);
 
   // Fetch weather data when location changes
   useEffect(() => {
@@ -370,6 +399,11 @@ export function Sidebar() {
               <SavedLocationsList />
             </div>
           )}
+
+          {/* Recently Viewed Locations - Always visible */}
+          <div className="pt-6 mt-6 border-t">
+            <RecentlyViewed collapsible defaultCollapsed={false} />
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -11,10 +11,10 @@
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
-| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 90% |
+| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 95% |
 
 **Last Updated**: 2026-01-18
-**Current Phase**: Phase 8H & 8I Complete - Onboarding & Keyboard Shortcuts ✅
+**Current Phase**: Phase 8J Complete - Location History & Recently Viewed ✅
 
 ---
 
@@ -1159,23 +1159,38 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 
 ---
 
-#### Phase 8J: Location History & Recently Viewed (Low Priority)
+#### Phase 8J: Location History & Recently Viewed (✅ COMPLETED)
 
 **Goal**: Track and display recently viewed locations.
 
 **Tasks**:
-- [ ] Store location view history in localStorage
-- [ ] Show "Recently Viewed" section in sidebar
-- [ ] Add "Clear History" option
-- [ ] Limit to last 10 locations
+- [x] Store location view history in localStorage
+- [x] Show "Recently Viewed" section in sidebar
+- [x] Add "Clear History" option
+- [x] Limit to last 10 locations
 
-**Files to Create**:
-- `src/hooks/useLocationHistory.ts` - History management
-- `components/locations/RecentlyViewed.tsx` - History display
+**Files Created**: 2 new files
+- `src/stores/locationHistoryStore.ts` - Zustand store with localStorage persistence
+- `components/locations/RecentlyViewed.tsx` - Collapsible history display with remove/clear options
 
-**Files to Modify**:
-- `components/layout/Sidebar.tsx` - Add recently viewed section
-- `components/map/MapView.tsx` - Track location views
+**Files Modified**: 1 file
+- `components/layout/Sidebar.tsx` - Added history tracking and RecentlyViewed component
+
+**Dependencies Added**:
+- `@radix-ui/react-collapsible` - For collapsible section
+- `@radix-ui/react-alert-dialog` - For clear history confirmation
+
+**Key Features**:
+- Auto-tracks all viewed locations (max 10)
+- Collapsible "Recently Viewed" section in sidebar
+- Click to navigate back to a location
+- Remove individual entries with X button
+- Clear all history with confirmation dialog
+- Relative time display ("2h ago", "Yesterday")
+- Coordinates formatted as fallback names (e.g., "54.5000°N, 3.5000°W")
+- Persisted to localStorage
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180) | ✅ build
 
 **Benefits**:
 - Quick access to recent locations
@@ -1200,9 +1215,9 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 7. **8H: Onboarding** - ✅ Complete
 8. **8I: Keyboard Shortcuts** - ✅ Complete (merged with 8H)
 
-#### Phase 8.4 (Nice to Have) - NEXT
-9. **8J: Location History** - Convenience (NEXT)
-10. **8G: Share & Export** - Nice to have
+#### Phase 8.4 (Nice to Have) ✅ MOSTLY COMPLETE
+9. **8J: Location History** - ✅ Complete
+10. **8G: Share & Export** - Remaining (low priority)
 
 ---
 
