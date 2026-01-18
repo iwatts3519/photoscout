@@ -9,6 +9,9 @@ import {
   Edit,
   MoreVertical,
   Navigation,
+  Clock,
+  Calendar,
+  FileText,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -22,6 +25,31 @@ import { useMapStore } from '@/src/stores/mapStore';
 import { CollectionBadge } from './CollectionBadge';
 import { toast } from 'sonner';
 import type { SavedLocation } from '@/src/stores/locationStore';
+
+// Helper to format last visited date
+function formatLastVisited(dateString: string | null): string | null {
+  if (!dateString) return null;
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffDays = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return null;
+  }
+}
 
 interface LocationCardProps {
   location: SavedLocation;
@@ -129,6 +157,36 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
           {location.collection_id && (
             <div className="pl-6">
               <CollectionBadge collectionId={location.collection_id} />
+            </div>
+          )}
+
+          {/* Best time to visit */}
+          {location.best_time_to_visit && (
+            <div className="flex items-start gap-2 pl-6">
+              <Clock className="h-3.5 w-3.5 mt-0.5 text-amber-500 flex-shrink-0" />
+              <span className="text-sm text-muted-foreground">
+                {location.best_time_to_visit}
+              </span>
+            </div>
+          )}
+
+          {/* Last visited */}
+          {location.last_visited && (
+            <div className="flex items-center gap-2 pl-6">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+              <span className="text-xs text-muted-foreground">
+                Last visited: {formatLastVisited(location.last_visited)}
+              </span>
+            </div>
+          )}
+
+          {/* Notes (truncated) */}
+          {location.notes && (
+            <div className="flex items-start gap-2 pl-6">
+              <FileText className="h-3.5 w-3.5 mt-0.5 text-muted-foreground flex-shrink-0" />
+              <p className="text-xs text-muted-foreground line-clamp-2 italic">
+                {location.notes}
+              </p>
             </div>
           )}
 

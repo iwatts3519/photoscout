@@ -5,7 +5,8 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Save, MapPin } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2, Save, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { createLocation } from '@/app/actions/locations';
 import { useLocationStore } from '@/src/stores/locationStore';
 import { useCollectionStore } from '@/src/stores/collectionStore';
@@ -16,6 +17,8 @@ const locationSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
   description: z.string().max(500, 'Description is too long').optional(),
   tags: z.string().optional(), // Comma-separated tags
+  notes: z.string().max(2000, 'Notes are too long').optional(),
+  best_time_to_visit: z.string().max(500, 'Best time is too long').optional(),
 });
 
 interface SaveLocationFormProps {
@@ -32,7 +35,10 @@ export function SaveLocationForm({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
+  const [notes, setNotes] = useState('');
+  const [bestTimeToVisit, setBestTimeToVisit] = useState('');
   const [collectionId, setCollectionId] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,7 +49,13 @@ export function SaveLocationForm({
     e.preventDefault();
 
     // Validate input
-    const result = locationSchema.safeParse({ name, description, tags });
+    const result = locationSchema.safeParse({
+      name,
+      description,
+      tags,
+      notes,
+      best_time_to_visit: bestTimeToVisit,
+    });
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
@@ -73,6 +85,8 @@ export function SaveLocationForm({
         tags: tagArray.length > 0 ? tagArray : undefined,
         is_public: false,
         collection_id: collectionId,
+        notes: result.data.notes,
+        best_time_to_visit: result.data.best_time_to_visit,
       });
 
       if (error) {
@@ -96,7 +110,10 @@ export function SaveLocationForm({
         setName('');
         setDescription('');
         setTags('');
+        setNotes('');
+        setBestTimeToVisit('');
         setCollectionId(null);
+        setShowAdvanced(false);
 
         // Call success callback
         onSuccess?.();
@@ -172,6 +189,66 @@ export function SaveLocationForm({
           disabled={isLoading}
         />
         {errors.tags && <p className="text-sm text-destructive">{errors.tags}</p>}
+      </div>
+
+      {/* Expandable advanced options */}
+      <div className="border rounded-lg">
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="flex items-center justify-between w-full p-3 text-sm font-medium text-left hover:bg-accent/50 transition-colors"
+          disabled={isLoading}
+        >
+          <span>More details (optional)</span>
+          {showAdvanced ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+
+        {showAdvanced && (
+          <div className="p-3 pt-0 space-y-4 border-t">
+            <div className="space-y-2">
+              <Label htmlFor="location-notes">Notes</Label>
+              <Textarea
+                id="location-notes"
+                placeholder="Detailed notes about parking, access, best angles, hazards..."
+                value={notes}
+                onChange={(e) => {
+                  setNotes(e.target.value);
+                  setErrors({ ...errors, notes: '' });
+                }}
+                disabled={isLoading}
+                rows={3}
+                className="resize-none"
+              />
+              {errors.notes && (
+                <p className="text-sm text-destructive">{errors.notes}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location-best-time">Best Time to Visit</Label>
+              <Input
+                id="location-best-time"
+                type="text"
+                placeholder="e.g., Golden hour in autumn, Low tide only"
+                value={bestTimeToVisit}
+                onChange={(e) => {
+                  setBestTimeToVisit(e.target.value);
+                  setErrors({ ...errors, best_time_to_visit: '' });
+                }}
+                disabled={isLoading}
+              />
+              {errors.best_time_to_visit && (
+                <p className="text-sm text-destructive">
+                  {errors.best_time_to_visit}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {collections.length > 0 && (

@@ -11,10 +11,10 @@
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
-| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 63% |
+| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 75% |
 
-**Last Updated**: 2026-01-18
-**Current Phase**: Phase 8E Complete - Location Organization & Collections ✅
+**Last Updated**: 2026-01-19
+**Current Phase**: Phase 8F Complete - Location Notes & Annotations ✅
 
 ---
 
@@ -1021,26 +1021,42 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 
 ---
 
-#### Phase 8F: Location Notes & Annotations (Medium Priority)
+#### Phase 8F: Location Notes & Annotations (✅ COMPLETED)
 
 **Goal**: Allow users to add notes, tips, and annotations to saved locations.
 
 **Tasks**:
-- [ ] Add notes field to location edit form
-- [ ] Show notes in location card
-- [ ] Add rich text support (optional, start with plain text)
-- [ ] Add "last visited" date tracking
-- [ ] Add "best time to visit" notes
+- [x] Add notes field to location edit form
+- [x] Show notes in location card
+- [x] Add "last visited" date tracking
+- [x] Add "best time to visit" notes
+- [x] Add expandable "More details" section to save form
 
-**Files to Modify**:
-- `components/locations/EditLocationForm.tsx` - Add notes textarea
-- `components/locations/LocationCard.tsx` - Display notes
-- `supabase/migrations/` - Enhance description field or add notes column
+**Files Created**: 1 new file
+- `supabase/migrations/20260119000001_add_location_notes.sql` - Migration for notes, last_visited, best_time_to_visit
+
+**Files Modified**: 6 files
+- `components/locations/EditLocationForm.tsx` - Added notes textarea, best time, last visited date picker
+- `components/locations/SaveLocationForm.tsx` - Added expandable advanced section with notes/best time
+- `components/locations/LocationCard.tsx` - Display notes, best time, last visited with icons
+- `app/actions/locations.ts` - Added new fields to schemas and actions
+- `lib/queries/locations.ts` - Updated select to include new fields
+- `src/types/database.ts` - Regenerated with new columns
+
+**Key Features**:
+- Notes field with 2000 character limit for detailed location tips
+- Best time to visit field for seasonal/tidal conditions
+- Last visited date tracking with relative time display ("3 days ago")
+- Expandable "More details" section in save form for streamlined UX
+- Icons for visual distinction (Clock, Calendar, FileText)
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180) | ✅ build
 
 **Benefits**:
-- Capture location-specific tips
+- Capture location-specific tips (parking, access, hazards)
 - Remember why location was saved
-- Share knowledge with self/future self
+- Track when locations were last scouted
+- Note optimal shooting conditions
 
 ---
 
@@ -1162,13 +1178,13 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 2. **8B: Date/Time Selection** - ✅ Complete
 3. **8D: User Preferences & Settings** - ✅ Complete
 
-#### Phase 8.2 (High Impact, Medium Effort) - IN PROGRESS
+#### Phase 8.2 (High Impact, Medium Effort) ✅ COMPLETE
 4. **8C: Multi-Day Forecast** - ✅ Complete
 5. **8E: Collections** - ✅ Complete
-6. **8F: Location Notes** - Enhanced utility (NEXT)
+6. **8F: Location Notes** - ✅ Complete
 
-#### Phase 8.3 (Polish & Power Features)
-7. **8H: Onboarding** - Better first experience
+#### Phase 8.3 (Polish & Power Features) - NEXT
+7. **8H: Onboarding** - Better first experience (NEXT)
 8. **8I: Keyboard Shortcuts** - Power users
 9. **8J: Location History** - Convenience
 10. **8G: Share & Export** - Nice to have

@@ -69,39 +69,48 @@ export type Database = {
       }
       locations: {
         Row: {
+          best_time_to_visit: string | null
           collection_id: string | null
           coordinates: unknown
           created_at: string | null
           description: string | null
           id: string
           is_public: boolean | null
+          last_visited: string | null
           name: string
+          notes: string | null
           radius_meters: number | null
           tags: string[] | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          best_time_to_visit?: string | null
           collection_id?: string | null
           coordinates: unknown
           created_at?: string | null
           description?: string | null
           id?: string
           is_public?: boolean | null
+          last_visited?: string | null
           name: string
+          notes?: string | null
           radius_meters?: number | null
           tags?: string[] | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          best_time_to_visit?: string | null
           collection_id?: string | null
           coordinates?: unknown
           created_at?: string | null
           description?: string | null
           id?: string
           is_public?: boolean | null
+          last_visited?: string | null
           name?: string
+          notes?: string | null
           radius_meters?: number | null
           tags?: string[] | null
           updated_at?: string | null
@@ -516,13 +525,16 @@ export type Database = {
       locations_near_point: {
         Args: { lat: number; lng: number; radius_meters: number }
         Returns: {
+          best_time_to_visit: string | null
           collection_id: string | null
           coordinates: unknown
           created_at: string | null
           description: string | null
           id: string
           is_public: boolean | null
+          last_visited: string | null
           name: string
+          notes: string | null
           radius_meters: number | null
           tags: string[] | null
           updated_at: string | null

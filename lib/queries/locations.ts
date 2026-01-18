@@ -9,7 +9,7 @@ export async function getLocationsByUser(
 ) {
   const { data, error } = await supabase
     .from('locations')
-    .select('id, user_id, name, description, radius_meters, tags, is_public, created_at, updated_at, coordinates, collection_id')
+    .select('id, user_id, name, description, radius_meters, tags, is_public, created_at, updated_at, coordinates, collection_id, notes, best_time_to_visit, last_visited')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 

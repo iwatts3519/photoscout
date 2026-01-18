@@ -24,6 +24,8 @@ const createLocationSchema = z.object({
   tags: z.array(z.string()).optional(),
   is_public: z.boolean().optional(),
   collection_id: z.string().uuid().nullable().optional(),
+  notes: z.string().max(2000, 'Notes are too long').optional(),
+  best_time_to_visit: z.string().max(500, 'Best time is too long').optional(),
 });
 
 const updateLocationSchema = z.object({
@@ -33,6 +35,9 @@ const updateLocationSchema = z.object({
   tags: z.array(z.string()).optional(),
   is_public: z.boolean().optional(),
   collection_id: z.string().uuid().nullable().optional(),
+  notes: z.string().max(2000).optional(),
+  best_time_to_visit: z.string().max(500).optional(),
+  last_visited: z.string().optional(), // ISO date string
 });
 
 /**
@@ -61,7 +66,7 @@ export async function fetchUserLocations(): Promise<{
     // Use raw SQL to extract lat/lng from PostGIS geography
     const { data: rawLocations, error: queryError } = await supabase
       .from('locations')
-      .select('id, user_id, name, description, radius_meters, tags, is_public, created_at, updated_at, coordinates, collection_id')
+      .select('id, user_id, name, description, radius_meters, tags, is_public, created_at, updated_at, coordinates, collection_id, notes, best_time_to_visit, last_visited')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -125,6 +130,8 @@ export async function createLocation(input: {
   tags?: string[];
   is_public?: boolean;
   collection_id?: string | null;
+  notes?: string;
+  best_time_to_visit?: string;
 }): Promise<{
   data: SavedLocation | null;
   error: string | null;
@@ -167,6 +174,9 @@ export async function createLocation(input: {
       tags: result.data.tags || null,
       is_public: result.data.is_public || false,
       collection_id: result.data.collection_id || null,
+      notes: result.data.notes || null,
+      best_time_to_visit: result.data.best_time_to_visit || null,
+      last_visited: null, // Set via edit form when user visits location
     });
 
     return {
@@ -195,6 +205,9 @@ export async function updateLocationAction(
     tags?: string[];
     is_public?: boolean;
     collection_id?: string | null;
+    notes?: string;
+    best_time_to_visit?: string;
+    last_visited?: string;
   }
 ): Promise<{
   data: SavedLocation | null;
