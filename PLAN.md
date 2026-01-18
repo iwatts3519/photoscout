@@ -11,10 +11,10 @@
 | **Phase 5: Weather Integration** | ✅ Complete | 100% |
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
-| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 75% |
+| **Phase 8: UX & Feature Enhancements** | 🔄 In Progress | 90% |
 
-**Last Updated**: 2026-01-19
-**Current Phase**: Phase 8F Complete - Location Notes & Annotations ✅
+**Last Updated**: 2026-01-18
+**Current Phase**: Phase 8H & 8I Complete - Onboarding & Keyboard Shortcuts ✅
 
 ---
 
@@ -1087,25 +1087,39 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 
 ---
 
-#### Phase 8H: Onboarding & Feature Discovery (Medium Priority)
+#### Phase 8H: Onboarding & Feature Discovery (✅ COMPLETED)
 
 **Goal**: Guide new users through key features.
 
 **Tasks**:
-- [ ] Create onboarding flow component
-- [ ] Add tooltips for first-time feature use
-- [ ] Add "Getting Started" guide
-- [ ] Add keyboard shortcuts help
-- [ ] Track onboarding completion
+- [x] Create onboarding flow component
+- [x] Add tooltips for first-time feature use
+- [x] Add "Getting Started" guide
+- [x] Add keyboard shortcuts help
+- [x] Track onboarding completion
 
-**Files to Create**:
-- `components/onboarding/OnboardingFlow.tsx` - Multi-step onboarding
-- `components/onboarding/FeatureTooltip.tsx` - Contextual tooltips
-- `components/shared/KeyboardShortcuts.tsx` - Shortcuts help dialog
+**Files Created**: 5 new files
+- `src/stores/onboardingStore.ts` - Zustand store with localStorage persistence for onboarding state
+- `components/onboarding/OnboardingDialog.tsx` - Multi-step welcome tour (6 steps)
+- `components/onboarding/FeatureTooltip.tsx` - Contextual tooltips and inline hints
+- `components/shared/KeyboardShortcuts.tsx` - Keyboard shortcuts help dialog
+- `src/hooks/useKeyboardShortcuts.ts` - Keyboard shortcut handler hook
 
-**Files to Modify**:
-- `app/page.tsx` - Check onboarding status
-- `components/layout/AppShell.tsx` - Add help/shortcuts button
+**Files Modified**: 4 files
+- `components/layout/AppShell.tsx` - Added onboarding, help menu, keyboard shortcuts integration
+- `components/settings/SettingsDialog.tsx` - Added controlled mode support
+- `components/map/LocationSearch.tsx` - Added data attribute for keyboard shortcut focus
+
+**Key Features**:
+- 6-step onboarding tour (Welcome, Map Basics, Location Search, Weather Info, Save Locations, Complete)
+- Auto-shows for new users on first visit
+- Help menu with "Getting Started" and "Keyboard Shortcuts" options
+- Keyboard shortcuts: `/` (search), `s` (settings), `h` (help), `?` (shortcuts), `+/-` (zoom), `l` (locate)
+- FeatureTooltip component for contextual first-use hints
+- InlineHint component for dismissible hints
+- All state persisted to localStorage
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180) | ✅ build
 
 **Benefits**:
 - Faster user adoption
@@ -1114,30 +1128,29 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 
 ---
 
-#### Phase 8I: Keyboard Shortcuts (Low Priority)
+#### Phase 8I: Keyboard Shortcuts (✅ COMPLETED - Merged with 8H)
 
 **Goal**: Power user efficiency with keyboard shortcuts.
 
 **Tasks**:
-- [ ] Add keyboard shortcut handler hook
-- [ ] Implement common shortcuts (search, settings, etc.)
-- [ ] Show shortcuts in help dialog
-- [ ] Add shortcut hints in UI
+- [x] Add keyboard shortcut handler hook
+- [x] Implement common shortcuts (search, settings, etc.)
+- [x] Show shortcuts in help dialog
+- [x] Add shortcut hints in UI
 
-**Files to Create**:
-- `src/hooks/useKeyboardShortcuts.ts` - Shortcut handler
-- `components/shared/KeyboardShortcuts.tsx` - Shortcuts reference
+**Note**: Implemented as part of Phase 8H. See Phase 8H for details.
 
-**Files to Modify**:
-- `components/layout/AppShell.tsx` - Wire up shortcuts
-- `components/map/MapView.tsx` - Map-specific shortcuts
-
-**Shortcuts to Implement**:
+**Shortcuts Implemented**:
 - `/` - Focus search
-- `?` - Show shortcuts
+- `?` - Show keyboard shortcuts dialog
 - `s` - Open settings
+- `h` - Show help / onboarding
+- `+` / `=` - Zoom in
+- `-` - Zoom out
+- `l` - Center on my location
+- `1` - Show current weather
+- `2` - Show 7-day forecast
 - `Esc` - Close dialogs
-- Arrow keys - Pan map (when map focused)
 
 **Benefits**:
 - Faster workflow for power users
@@ -1183,10 +1196,12 @@ Improve PhotoScout's usability, user experience, and feature set based on codeba
 5. **8E: Collections** - ✅ Complete
 6. **8F: Location Notes** - ✅ Complete
 
-#### Phase 8.3 (Polish & Power Features) - NEXT
-7. **8H: Onboarding** - Better first experience (NEXT)
-8. **8I: Keyboard Shortcuts** - Power users
-9. **8J: Location History** - Convenience
+#### Phase 8.3 (Polish & Power Features) ✅ COMPLETE
+7. **8H: Onboarding** - ✅ Complete
+8. **8I: Keyboard Shortcuts** - ✅ Complete (merged with 8H)
+
+#### Phase 8.4 (Nice to Have) - NEXT
+9. **8J: Location History** - Convenience (NEXT)
 10. **8G: Share & Export** - Nice to have
 
 ---

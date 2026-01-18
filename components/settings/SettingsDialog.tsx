@@ -29,9 +29,13 @@ import {
 
 interface SettingsDialogProps {
   trigger?: React.ReactNode;
+  /** Controlled mode: whether the dialog is open */
+  open?: boolean;
+  /** Controlled mode: callback when open state changes */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function SettingsDialog({ trigger }: SettingsDialogProps) {
+export function SettingsDialog({ trigger, open, onOpenChange }: SettingsDialogProps) {
   const {
     unitSystem,
     defaultRadius,
@@ -45,16 +49,22 @@ export function SettingsDialog({ trigger }: SettingsDialogProps) {
     distanceUnit,
   } = useSettingsStore();
 
+  // Support both controlled and uncontrolled modes
+  const dialogProps = open !== undefined ? { open, onOpenChange } : {};
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="ghost" size="icon">
-            <Settings className="h-4 w-4" />
-            <span className="sr-only">Settings</span>
-          </Button>
-        )}
-      </DialogTrigger>
+    <Dialog {...dialogProps}>
+      {/* Only render trigger in uncontrolled mode */}
+      {open === undefined && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button variant="ghost" size="icon">
+              <Settings className="h-4 w-4" />
+              <span className="sr-only">Settings</span>
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

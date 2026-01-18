@@ -151,6 +151,7 @@ export function LocationSearch() {
             aria-label="Search location"
             aria-expanded={shouldShowDropdown || undefined}
             aria-haspopup="listbox"
+            data-search-input
           />
           {(searchQuery || isSearching) && (
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
