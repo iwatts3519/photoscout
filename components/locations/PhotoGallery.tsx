@@ -64,7 +64,13 @@ export function PhotoGallery({
           setError(result.error);
           setPhotos([]);
         } else {
-          setPhotos(result.data || []);
+          // Deduplicate photos by ID (API sometimes returns duplicates)
+          const data = result.data || [];
+          const uniquePhotos = data.filter(
+            (photo, index, self) =>
+              index === self.findIndex((p) => p.id === photo.id)
+          );
+          setPhotos(uniquePhotos);
         }
       } catch (err) {
         if (cancelled) return;

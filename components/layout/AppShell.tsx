@@ -10,8 +10,12 @@ import { AuthDialog } from '@/components/auth/AuthDialog';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { OnboardingDialog } from '@/components/onboarding/OnboardingDialog';
 import { KeyboardShortcutsDialog } from '@/components/shared/KeyboardShortcuts';
+import { MobileWeatherBar } from '@/components/mobile/MobileWeatherBar';
+import { MobileBottomPeek } from '@/components/mobile/MobileBottomPeek';
 import { useAuth } from '@/src/hooks/useAuth';
 import { useRecentSearches } from '@/src/hooks/useRecentSearches';
+import { useWeather } from '@/src/hooks/useWeather';
+import { useNearbyPhotos } from '@/src/hooks/useNearbyPhotos';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useMapStore } from '@/src/stores/mapStore';
 import { useGeolocation } from '@/src/hooks/useGeolocation';
@@ -45,9 +49,15 @@ export function AppShell({ children }: AppShellProps) {
     setShowOnboarding,
   } = useOnboardingStore();
 
-  // Map state for keyboard shortcuts
+  // Map state for keyboard shortcuts and mobile bars
   const mapInstance = useMapStore((state) => state.mapInstance);
+  const selectedLocation = useMapStore((state) => state.selectedLocation);
+  const selectedDateTime = useMapStore((state) => state.selectedDateTime);
   const { getLocation } = useGeolocation();
+
+  // Weather and photos for mobile bars
+  const { weather, isLoading: weatherLoading, error: weatherError } = useWeather();
+  const { photoCount, isLoading: photosLoading } = useNearbyPhotos({ enabled: !!selectedLocation });
 
   // Sync recent searches with localStorage
   useRecentSearches();
@@ -113,12 +123,182 @@ export function AppShell({ children }: AppShellProps) {
         <Sidebar />
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 relative">
-        {children}
+      {/* Main Content Area - Flex column on mobile for top/bottom bars */}
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Weather Bar - Only visible on mobile when location selected */}
+        {selectedLocation && (
+          <div className="lg:hidden flex items-center">
+            {/* Menu Button */}
+            <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Open menu"
+                  className="flex-shrink-0 h-10 w-10 border-r"
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
 
-        {/* Desktop User Menu - Top Right */}
-        <div className="hidden lg:flex absolute top-4 right-4 z-10 gap-2">
+              <SheetContent side="left" className="p-0 w-full sm:w-96">
+                <SheetTitle className="sr-only">Location Details</SheetTitle>
+                <SheetDescription className="sr-only">
+                  View and adjust location details, weather conditions, and photography scores
+                </SheetDescription>
+
+                {/* Mobile User Menu - Inside Sheet */}
+                <div className="p-4 border-b flex items-center justify-between">
+                  <h2 className="font-semibold">PhotoScout</h2>
+                  <div className="flex items-center gap-2">
+                    {/* Help Menu for Mobile */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Help and shortcuts"
+                        >
+                          <HelpCircle className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => startOnboarding()}>
+                          <HelpCircle className="mr-2 h-4 w-4" />
+                          Getting Started
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setIsShortcutsDialogOpen(true)}>
+                          <Keyboard className="mr-2 h-4 w-4" />
+                          Keyboard Shortcuts
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {!loading && (
+                      <>
+                        {user ? (
+                          <UserMenu />
+                        ) : (
+                          <>
+                            <SettingsDialog
+                              open={isSettingsOpen}
+                              onOpenChange={setIsSettingsOpen}
+                            />
+                            <Button
+                              onClick={() => setIsAuthDialogOpen(true)}
+                              size="sm"
+                            >
+                              <LogIn className="mr-2 h-4 w-4" />
+                              Sign In
+                            </Button>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <Sidebar />
+              </SheetContent>
+            </Sheet>
+
+            {/* Weather Bar */}
+            <MobileWeatherBar
+              weather={weather}
+              isLoading={weatherLoading}
+              error={weatherError}
+              lat={selectedLocation.lat}
+              lng={selectedLocation.lng}
+              date={selectedDateTime || undefined}
+              className="flex-1"
+            />
+          </div>
+        )}
+
+        {/* Map / Main Content */}
+        <main className="flex-1 relative">
+          {children}
+
+          {/* Mobile Menu Button - Only when no location selected */}
+          {!selectedLocation && (
+            <div className="lg:hidden absolute top-4 left-4 z-10">
+              <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    aria-label="Open menu"
+                    className="bg-white hover:bg-gray-100 shadow-md"
+                  >
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+
+                <SheetContent side="left" className="p-0 w-full sm:w-96">
+                  <SheetTitle className="sr-only">Location Details</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    View and adjust location details, weather conditions, and photography scores
+                  </SheetDescription>
+
+                  {/* Mobile User Menu - Inside Sheet */}
+                  <div className="p-4 border-b flex items-center justify-between">
+                    <h2 className="font-semibold">PhotoScout</h2>
+                    <div className="flex items-center gap-2">
+                      {/* Help Menu for Mobile */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Help and shortcuts"
+                          >
+                            <HelpCircle className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => startOnboarding()}>
+                            <HelpCircle className="mr-2 h-4 w-4" />
+                            Getting Started
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setIsShortcutsDialogOpen(true)}>
+                            <Keyboard className="mr-2 h-4 w-4" />
+                            Keyboard Shortcuts
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
+                      {!loading && (
+                        <>
+                          {user ? (
+                            <UserMenu />
+                          ) : (
+                            <>
+                              <SettingsDialog
+                                open={isSettingsOpen}
+                                onOpenChange={setIsSettingsOpen}
+                              />
+                              <Button
+                                onClick={() => setIsAuthDialogOpen(true)}
+                                size="sm"
+                              >
+                                <LogIn className="mr-2 h-4 w-4" />
+                                Sign In
+                              </Button>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <Sidebar />
+                </SheetContent>
+              </Sheet>
+            </div>
+          )}
+
+          {/* Desktop User Menu - Top Right */}
+          <div className="hidden lg:flex absolute top-4 right-4 z-10 gap-2">
           {/* Help Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -168,82 +348,18 @@ export function AppShell({ children }: AppShellProps) {
           )}
         </div>
 
-        {/* Mobile Menu Button - Only visible on mobile */}
-        <div className="lg:hidden absolute top-4 left-4 z-10">
-          <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-            <SheetTrigger asChild>
-              <Button
-                size="icon"
-                variant="secondary"
-                aria-label="Open menu"
-                className="bg-white hover:bg-gray-100 shadow-md"
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
+        </main>
 
-            <SheetContent side="left" className="p-0 w-full sm:w-96">
-              <SheetTitle className="sr-only">Location Details</SheetTitle>
-              <SheetDescription className="sr-only">
-                View and adjust location details, weather conditions, and photography scores
-              </SheetDescription>
-
-              {/* Mobile User Menu - Inside Sheet */}
-              <div className="p-4 border-b flex items-center justify-between">
-                <h2 className="font-semibold">PhotoScout</h2>
-                <div className="flex items-center gap-2">
-                  {/* Help Menu for Mobile */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Help and shortcuts"
-                      >
-                        <HelpCircle className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => startOnboarding()}>
-                        <HelpCircle className="mr-2 h-4 w-4" />
-                        Getting Started
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setIsShortcutsDialogOpen(true)}>
-                        <Keyboard className="mr-2 h-4 w-4" />
-                        Keyboard Shortcuts
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  {!loading && (
-                    <>
-                      {user ? (
-                        <UserMenu />
-                      ) : (
-                        <>
-                          <SettingsDialog
-                            open={isSettingsOpen}
-                            onOpenChange={setIsSettingsOpen}
-                          />
-                          <Button
-                            onClick={() => setIsAuthDialogOpen(true)}
-                            size="sm"
-                          >
-                            <LogIn className="mr-2 h-4 w-4" />
-                            Sign In
-                          </Button>
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <Sidebar />
-            </SheetContent>
-          </Sheet>
-        </div>
-      </main>
+        {/* Mobile Bottom Peek Bar - Only visible on mobile when location selected */}
+        {selectedLocation && (
+          <div className="lg:hidden">
+            <MobileBottomPeek
+              photoCount={photoCount}
+              photosLoading={photosLoading}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Auth Dialog */}
       <AuthDialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen} />

@@ -12,10 +12,10 @@ import {
   X,
   MapPin,
   Save,
-  ChevronRight,
   Loader2,
   Camera,
   ExternalLink,
+  Expand,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,7 +60,7 @@ export function FloatingLocationCard({ className }: FloatingLocationCardProps) {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Store subscriptions
-  const { openFloatingCards, closeFloatingCard, openFloatingCard } = useUIStore();
+  const { openFloatingCards, closeFloatingCard, openFloatingCard, openBottomSheet } = useUIStore();
   const { selectedLocation, radius } = useMapStore();
   const { pois, filters, loading: poisLoading } = usePOIStore();
   const addLocation = useLocationStore((state) => state.addLocation);
@@ -111,7 +111,12 @@ export function FloatingLocationCard({ className }: FloatingLocationCardProps) {
       );
 
       if (result.data) {
-        setPhotos(result.data);
+        // Deduplicate photos by ID (API sometimes returns duplicates)
+        const uniquePhotos = result.data.filter(
+          (photo, index, self) =>
+            index === self.findIndex((p) => p.id === photo.id)
+        );
+        setPhotos(uniquePhotos);
       } else {
         setPhotos([]);
       }
@@ -234,6 +239,8 @@ export function FloatingLocationCard({ className }: FloatingLocationCardProps) {
           'absolute bottom-4 right-4 z-20 w-80 max-h-[calc(100%-2rem)] overflow-hidden',
           'rounded-lg border bg-background shadow-lg',
           'animate-in slide-in-from-right-2 fade-in-0 duration-200',
+          // Hidden on mobile - use bottom sheet instead
+          'hidden lg:block',
           className
         )}
       >
@@ -270,7 +277,15 @@ export function FloatingLocationCard({ className }: FloatingLocationCardProps) {
                   Nearby POIs {!poisLoading && `(${filteredPOIs.length})`}
                 </p>
                 {filteredPOIs.length > 0 && (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => openBottomSheet('poi')}
+                  >
+                    <Expand className="h-3 w-3 mr-1" />
+                    View All
+                  </Button>
                 )}
               </div>
 
@@ -313,8 +328,16 @@ export function FloatingLocationCard({ className }: FloatingLocationCardProps) {
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Nearby Photos {!loadingPhotos && photos.length > 0 && `(${photos.length})`}
               </p>
-              {photos.length > 3 && (
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              {photos.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => openBottomSheet('photos')}
+                >
+                  <Expand className="h-3 w-3 mr-1" />
+                  View All
+                </Button>
               )}
             </div>
 

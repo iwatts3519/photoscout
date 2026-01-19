@@ -13,6 +13,9 @@ import { SavedLocationMarkers } from './SavedLocationMarkers';
 import { POILayer } from './POILayer';
 import { FloatingWeatherCard } from './FloatingWeatherCard';
 import { FloatingLocationCard } from './FloatingLocationCard';
+import { POIBottomSheet } from '@/components/poi/POIBottomSheet';
+import { PhotosBottomSheet } from '@/components/photos/PhotosBottomSheet';
+import { ForecastBottomSheet } from '@/components/weather/ForecastBottomSheet';
 
 const MAP_STYLE = {
   version: 8,
@@ -191,6 +194,11 @@ export function MapView() {
       {/* Floating Cards Container */}
       <FloatingWeatherCard />
       <FloatingLocationCard />
+
+      {/* Bottom Sheets */}
+      <POIBottomSheet />
+      <PhotosBottomSheet />
+      <ForecastBottomSheet />
     </div>
   );
 }

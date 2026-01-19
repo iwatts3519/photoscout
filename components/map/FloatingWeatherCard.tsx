@@ -18,6 +18,7 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Expand,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -76,7 +77,7 @@ function getVisibilityQuality(meters: number): string {
 
 export function FloatingWeatherCard({ className }: FloatingWeatherCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const { openFloatingCards, closeFloatingCard } = useUIStore();
+  const { openFloatingCards, closeFloatingCard, openBottomSheet } = useUIStore();
   const { selectedLocation, selectedDateTime, setSelectedDateTime } = useMapStore();
   const { temperatureUnit, speedUnit, distanceUnit } = useSettingsStore();
 
@@ -238,6 +239,8 @@ export function FloatingWeatherCard({ className }: FloatingWeatherCardProps) {
         'absolute top-4 left-4 z-20 w-80 max-h-[calc(100%-2rem)] overflow-hidden',
         'rounded-lg border bg-background shadow-lg',
         'animate-in slide-in-from-left-2 fade-in-0 duration-200',
+        // Hidden on mobile - use bottom sheet instead
+        'hidden lg:block',
         className
       )}
     >
@@ -513,11 +516,26 @@ export function FloatingWeatherCard({ className }: FloatingWeatherCardProps) {
               <p className="text-sm text-destructive">{forecastError}</p>
             </div>
           ) : forecast ? (
-            <WeatherForecastCard
-              forecast={forecast}
-              onSelectDate={handleSelectDate}
-              className="border-0 shadow-none rounded-none"
-            />
+            <>
+              <WeatherForecastCard
+                forecast={forecast}
+                onSelectDate={handleSelectDate}
+                className="border-0 shadow-none rounded-none"
+              />
+              <div className="p-3 border-t">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    openBottomSheet('forecast');
+                    closeFloatingCard('weather');
+                  }}
+                >
+                  <Expand className="h-4 w-4 mr-2" />
+                  View Full Forecast
+                </Button>
+              </div>
+            </>
           ) : (
             <div className="p-4 text-center">
               <p className="text-sm text-muted-foreground">No forecast data available</p>

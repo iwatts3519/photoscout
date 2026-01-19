@@ -12,10 +12,10 @@
 | **Phase 6: Polish & Testing** | ✅ Complete | 100% |
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
 | **Phase 8: UX & Feature Enhancements** | ✅ Complete | 100% |
-| **Phase 9: Sidebar UI/UX Improvement** | 🔄 In Progress | 60% |
+| **Phase 9: Sidebar UI/UX Improvement** | 🔄 In Progress | 95% |
 
-**Last Updated**: 2026-01-18
-**Current Phase**: Phase 9C Complete - Floating Location Card
+**Last Updated**: 2026-01-19
+**Current Phase**: Phase 9E Complete - Mobile Adaptations
 
 ---
 
@@ -1462,55 +1462,50 @@ Transform the cluttered sidebar into a minimal action panel with floating cards 
 
 ---
 
-#### Phase 9D: Create Bottom Sheet for Expanded Content (PLANNED)
+#### Phase 9D: Create Bottom Sheet for Expanded Content (✅ COMPLETED)
 
 **Goal**: Full-screen expandable panel for detailed lists (POIs, photos, forecasts).
 
 **Trigger**: Click "expand" on floating cards or sidebar sections.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ ═══════════════════════════ [drag handle]                   │
-├─────────────────────────────────────────────────────────────┤
-│ Nearby Points of Interest                              [✕]  │
-├─────────────────────────────────────────────────────────────┤
-│ 🅿️ PARKING (3)                                              │
-│   • Car Park A - 0.2 km                                     │
-│   • Street Parking - 0.4 km                                 │
-│   • Multi-storey - 0.8 km                                   │
-│                                                             │
-│ ☕ CAFES (2)                                                 │
-│   • The Coffee House - 0.3 km                               │
-│   • Bean & Leaf - 0.6 km                                    │
-│                                                             │
-│ ...                                                         │
-└─────────────────────────────────────────────────────────────┘
-```
-
 **Tasks**:
-- [ ] Create reusable `BottomSheet` component
-- [ ] Implement three states: collapsed, peek, expanded
-- [ ] Create `POIBottomSheet` with grouped POI content
-- [ ] Create `PhotosBottomSheet` with photo gallery
-- [ ] Create `ForecastBottomSheet` with 7-day details
-- [ ] Add swipe gestures for expand/collapse
-- [ ] Add click outside to close
+- [x] Create reusable `BottomSheet` component
+- [x] Implement three states: collapsed, peek, expanded
+- [x] Create `POIBottomSheet` with grouped POI content
+- [x] Create `PhotosBottomSheet` with photo gallery
+- [x] Create `ForecastBottomSheet` with 7-day details
+- [x] Add swipe gestures for expand/collapse
+- [x] Add click outside to close
 
-**Files to Create**:
-- `components/layout/BottomSheet.tsx` - Reusable expandable sheet
-- `components/poi/POIBottomSheet.tsx` - POI-specific content
-- `components/weather/ForecastBottomSheet.tsx` - 7-day forecast
-- `components/photos/PhotosBottomSheet.tsx` - Photo gallery
+**Files Created**:
+- `components/layout/BottomSheet.tsx` - Reusable expandable sheet with drag/swipe gestures
+- `components/poi/POIBottomSheet.tsx` - POI-specific content with grouped display
+- `components/weather/ForecastBottomSheet.tsx` - 7-day forecast with photography scores
+- `components/photos/PhotosBottomSheet.tsx` - Photo gallery with full grid view
+
+**Files Modified**:
+- `components/map/MapView.tsx` - Added bottom sheet components
+- `components/map/FloatingLocationCard.tsx` - Added "View All" buttons for POIs and Photos
+- `components/map/FloatingWeatherCard.tsx` - Added "View Full Forecast" button
+
+**Key Features**:
+- Drag handle for swipe gestures (up to expand, down to collapse/close)
+- Three states: collapsed (hidden), peek (partial), expanded (full)
+- Click outside or Escape key to close
+- Backdrop overlay when expanded
+- Double-click header to toggle expand/collapse
+- Smooth CSS transitions
 
 **Behavior**:
-- Three states: collapsed (hidden), peek (partial), expanded (full)
-- Swipe up to expand, down to collapse
-- Click outside to close
-- Desktop: Can use Dialog instead or side panel
+- POI Bottom Sheet: Shows grouped POIs by category, with directions and "Show on Map" buttons
+- Photos Bottom Sheet: Full grid view of nearby photos with distance and license info
+- Forecast Bottom Sheet: Expandable day cards with detailed weather and photography scores
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180 passing)
 
 ---
 
-#### Phase 9E: Mobile Adaptations (PLANNED)
+#### Phase 9E: Mobile Adaptations (✅ COMPLETED)
 
 **Goal**: Ensure floating cards work well on small screens.
 
@@ -1528,36 +1523,51 @@ Transform the cluttered sidebar into a minimal action panel with floating cards 
 ```
 
 **Tasks**:
-- [ ] Create `MobileWeatherBar` component (compact top bar)
-- [ ] Create `MobileBottomPeek` component (bottom summary bar)
-- [ ] Update `AppShell` with mobile-specific layouts
-- [ ] Add responsive breakpoints to floating cards
-- [ ] Ensure bottom sheet is primary detail view on mobile
-- [ ] Test all interactions on touch devices
+- [x] Create `MobileWeatherBar` component (compact top bar)
+- [x] Create `MobileBottomPeek` component (bottom summary bar)
+- [x] Update `AppShell` with mobile-specific layouts
+- [x] Add responsive breakpoints to floating cards
+- [x] Ensure bottom sheet is primary detail view on mobile
+- [ ] Test all interactions on touch devices (deferred to manual testing)
 
-**Files to Create**:
-- `components/mobile/MobileWeatherBar.tsx` - Mobile top bar
-- `components/mobile/MobileBottomPeek.tsx` - Mobile bottom peek bar
+**Files Created**:
+- `components/mobile/MobileWeatherBar.tsx` - Compact weather bar for mobile (temp, golden hour, score)
+- `components/mobile/MobileBottomPeek.tsx` - Bottom bar showing location, POI count, photo count
+- `src/hooks/useWeather.ts` - Shared weather hook with caching (5 min)
+- `src/hooks/useNearbyPhotos.ts` - Shared photos hook with deduplication
 
-**Files to Modify**:
-- `components/layout/AppShell.tsx` - Add mobile top bar, responsive logic
+**Files Modified**:
+- `components/layout/AppShell.tsx` - Added mobile bars, integrated shared hooks
+- `components/map/FloatingWeatherCard.tsx` - Hidden on mobile (lg:block)
+- `components/map/FloatingLocationCard.tsx` - Hidden on mobile (lg:block)
+
+**Key Features**:
+- MobileWeatherBar shows temperature, weather condition, next golden hour, and photography score
+- Tapping weather bar opens forecast bottom sheet (not floating card)
+- MobileBottomPeek shows coordinates, POI count, and photo count with tap targets
+- Floating cards hidden on mobile - bottom sheets are primary detail view
+- Shared hooks reduce duplicate API calls and state management
+
+**Validation Results**: ✅ typecheck | ✅ lint | ✅ test (180/180 passing)
 
 ---
 
 ### File Changes Summary
 
 #### New Files
-| File | Purpose |
-|------|---------|
-| `components/weather/WeatherSummary.tsx` | Compact 3-line weather display |
-| `components/map/FloatingWeatherCard.tsx` | Detailed weather floating card |
-| `components/map/FloatingLocationCard.tsx` | Location + POI + photos card |
-| `components/layout/BottomSheet.tsx` | Reusable expandable bottom sheet |
-| `components/poi/POIBottomSheet.tsx` | POI-specific bottom sheet content |
-| `components/weather/ForecastBottomSheet.tsx` | 7-day forecast bottom sheet |
-| `components/photos/PhotosBottomSheet.tsx` | Photo gallery bottom sheet |
-| `components/mobile/MobileWeatherBar.tsx` | Mobile top bar with weather |
-| `components/mobile/MobileBottomPeek.tsx` | Mobile bottom peek bar |
+| File | Purpose | Status |
+|------|---------|--------|
+| `components/weather/WeatherSummary.tsx` | Compact 3-line weather display | ✅ |
+| `components/map/FloatingWeatherCard.tsx` | Detailed weather floating card | ✅ |
+| `components/map/FloatingLocationCard.tsx` | Location + POI + photos card | ✅ |
+| `components/layout/BottomSheet.tsx` | Reusable expandable bottom sheet | ✅ |
+| `components/poi/POIBottomSheet.tsx` | POI-specific bottom sheet content | ✅ |
+| `components/weather/ForecastBottomSheet.tsx` | 7-day forecast bottom sheet | ✅ |
+| `components/photos/PhotosBottomSheet.tsx` | Photo gallery bottom sheet | ✅ |
+| `components/mobile/MobileWeatherBar.tsx` | Mobile top bar with weather | ✅ |
+| `components/mobile/MobileBottomPeek.tsx` | Mobile bottom peek bar | ✅ |
+| `src/hooks/useWeather.ts` | Shared weather hook with caching | ✅ |
+| `src/hooks/useNearbyPhotos.ts` | Shared photos hook | ✅ |
 
 #### Modified Files
 | File | Changes |
@@ -1649,4 +1659,4 @@ npm run typecheck && npm run lint && npm run test
 
 **Plan Created**: 2026-01-04
 **Plan Location**: `D:\Cursor\photoscout\PLAN.md`
-**Last Updated**: 2026-01-18
+**Last Updated**: 2026-01-19
