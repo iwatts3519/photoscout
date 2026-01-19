@@ -5,6 +5,25 @@ import { z } from 'zod';
 
 const emailSchema = z.string().email();
 
+// Validate app URL environment variable
+const appEnvSchema = z.object({
+  NEXT_PUBLIC_APP_URL: z.string().url('Invalid app URL format'),
+});
+
+function getAppUrl(): string {
+  const result = appEnvSchema.safeParse({
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  });
+
+  if (!result.success) {
+    console.error('Invalid NEXT_PUBLIC_APP_URL:', result.error.message);
+    // Fallback to localhost for development
+    return 'http://localhost:3000';
+  }
+
+  return result.data.NEXT_PUBLIC_APP_URL;
+}
+
 /**
  * Send magic link to user's email for authentication
  */
@@ -26,7 +45,7 @@ export async function signInWithMagicLink(
     const { error } = await supabase.auth.signInWithOtp({
       email: result.data,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        emailRedirectTo: `${getAppUrl()}/auth/callback`,
       },
     });
 

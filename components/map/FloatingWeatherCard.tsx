@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
   Sunrise,
@@ -75,7 +75,7 @@ function getVisibilityQuality(meters: number): string {
   return 'Poor';
 }
 
-export function FloatingWeatherCard({ className }: FloatingWeatherCardProps) {
+export const FloatingWeatherCard = React.memo(function FloatingWeatherCard({ className }: FloatingWeatherCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const { openFloatingCards, closeFloatingCard, openBottomSheet } = useUIStore();
   const { selectedLocation, selectedDateTime, setSelectedDateTime } = useMapStore();
@@ -545,4 +545,4 @@ export function FloatingWeatherCard({ className }: FloatingWeatherCardProps) {
       </Tabs>
     </div>
   );
-}
+});

@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import {
   X,
@@ -55,7 +55,7 @@ function formatCoordinate(value: number, isLat: boolean): string {
   return `${Math.abs(value).toFixed(4)}°${direction}`;
 }
 
-export function FloatingLocationCard({ className }: FloatingLocationCardProps) {
+export const FloatingLocationCard = React.memo(function FloatingLocationCard({ className }: FloatingLocationCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -466,4 +466,4 @@ export function FloatingLocationCard({ className }: FloatingLocationCardProps) {
       />
     </>
   );
-}
+});

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { Map, Marker } from 'maplibre-gl';
 import { usePOIStore } from '@/src/stores/poiStore';
@@ -61,10 +61,12 @@ export function POILayer({ map }: POILayerProps) {
   const filters = usePOIStore((state) => state.filters);
   const markersRef = useRef<Marker[]>([]);
 
-  // Filter POIs based on current filter settings
-  const filteredPOIs = filters.showPOIs
-    ? pois.filter((poi) => filters.enabledTypes.includes(poi.type))
-    : [];
+  // Filter POIs based on current filter settings - memoized to prevent unnecessary re-renders
+  const filteredPOIs = useMemo(() => {
+    return filters.showPOIs
+      ? pois.filter((poi) => filters.enabledTypes.includes(poi.type))
+      : [];
+  }, [filters.showPOIs, filters.enabledTypes, pois]);
 
   useEffect(() => {
     if (!map) return;

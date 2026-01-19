@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { toast } from 'sonner';
@@ -38,7 +38,7 @@ const MAP_STYLE = {
   ],
 };
 
-export function MapView() {
+export const MapView = React.memo(function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -201,4 +201,4 @@ export function MapView() {
       <ForecastBottomSheet />
     </div>
   );
-}
+});

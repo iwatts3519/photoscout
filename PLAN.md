@@ -13,9 +13,14 @@
 | **Phase 7: High Priority Core Features** | ✅ Complete | 100% |
 | **Phase 8: UX & Feature Enhancements** | ✅ Complete | 100% |
 | **Phase 9: Sidebar UI/UX Improvement** | ✅ Complete | 100% |
+| **Phase 10: Weather Alerts & Notifications** | 📋 Planned | 0% |
+| **Phase 11: Community Photo Spots** | 📋 Planned | 0% |
+| **Phase 12: Photo Upload & Tagging** | 📋 Planned | 0% |
+| **Phase 13: Route Planning** | 📋 Planned | 0% |
+| **Phase 14: Location Comparison** | 📋 Planned | 0% |
 
 **Last Updated**: 2026-01-19
-**Current Phase**: All Phases Complete - Ready for Post-MVP Enhancements
+**Current Phase**: MVP Complete - Post-MVP Phases Planned
 
 ---
 
@@ -1648,14 +1653,1056 @@ npm run typecheck && npm run lint && npm run test
 
 ---
 
-## 🚀 Post-MVP Enhancements (Future Work)
+## 📋 Phase 10: Weather Alerts & Notifications (PLANNED)
 
-- Weather alerts and push notifications
-- Community photo spots and sharing
-- Photo upload and location tagging
-- Deployment to Vercel
-- Advanced route planning between locations
-- Location comparison mode
+### Goal
+Allow users to set up automated alerts for favorable photography conditions at their saved locations. Receive notifications when golden hour approaches, weather clears, or conditions match their preferences.
+
+### Overview
+
+**Core Concept**: Users configure alert rules (e.g., "notify me when cloud cover < 30% at Sunrise") and receive browser push notifications or email alerts when conditions are met.
+
+**Architecture**:
+```
+User → Creates Alert Rule → Stored in Database
+                              ↓
+              Scheduled Job (every 15 min) checks conditions
+                              ↓
+              If conditions match → Send Push Notification
+```
+
+### Sub-Phases
+
+#### Phase 10A: Alert Database Schema & Types
+**Goal**: Set up database tables for storing alert configurations.
+
+**Tasks**:
+- [ ] Create `alert_rules` table with conditions (location_id, alert_type, thresholds)
+- [ ] Create `alert_history` table for tracking sent notifications
+- [ ] Add RLS policies for user-owned alerts
+- [ ] Generate TypeScript types
+- [ ] Create Zod schemas for alert validation
+
+**Database Schema**:
+```sql
+CREATE TABLE alert_rules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  alert_type TEXT NOT NULL CHECK (alert_type IN ('golden_hour', 'clear_skies', 'low_wind', 'custom')),
+  conditions JSONB NOT NULL DEFAULT '{}',
+  -- Example: {"max_cloud_cover": 30, "min_visibility": 10, "max_wind_speed": 20}
+  time_window JSONB, -- {"start_hour": 5, "end_hour": 9} for morning alerts
+  days_of_week INTEGER[], -- [0,6] for weekends only
+  is_active BOOLEAN DEFAULT true,
+  last_triggered_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE alert_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  alert_rule_id UUID NOT NULL REFERENCES alert_rules(id) ON DELETE CASCADE,
+  triggered_at TIMESTAMPTZ DEFAULT NOW(),
+  conditions_snapshot JSONB NOT NULL,
+  notification_sent BOOLEAN DEFAULT false
+);
+```
+
+**Files to Create**:
+- `supabase/migrations/20260120000001_add_alert_tables.sql`
+- `src/types/alerts.types.ts`
+- `lib/queries/alerts.ts`
+- `app/actions/alerts.ts`
+
+---
+
+#### Phase 10B: Alert Configuration UI
+**Goal**: Build UI for creating and managing alert rules.
+
+**Tasks**:
+- [ ] Create `AlertRuleForm` component with condition builder
+- [ ] Create `AlertRuleCard` component for displaying rules
+- [ ] Create `AlertRulesList` component for managing all alerts
+- [ ] Create `AlertsDialog` accessible from location cards
+- [ ] Add alert quick-create from weather card ("Alert me when conditions like this")
+- [ ] Create alert store with Zustand
+
+**UI Components**:
+```
+┌─────────────────────────────────────────┐
+│ 🔔 Create Alert                    [✕]  │
+├─────────────────────────────────────────┤
+│ Location: [Dropdown - saved locations]  │
+│ Alert Name: [________________]          │
+├─────────────────────────────────────────┤
+│ Alert Type:                             │
+│ ○ Golden Hour Reminder (30 min before)  │
+│ ○ Clear Skies (cloud cover < ___%)      │
+│ ○ Low Wind (wind speed < ___ mph)       │
+│ ○ Custom Conditions                     │
+├─────────────────────────────────────────┤
+│ When to Check:                          │
+│ ☑ Morning (5am - 10am)                  │
+│ ☑ Evening (4pm - 9pm)                   │
+│ Days: [M][T][W][T][F][S][S]            │
+├─────────────────────────────────────────┤
+│ [Cancel]              [Create Alert]    │
+└─────────────────────────────────────────┘
+```
+
+**Files to Create**:
+- `src/stores/alertStore.ts`
+- `components/alerts/AlertRuleForm.tsx`
+- `components/alerts/AlertRuleCard.tsx`
+- `components/alerts/AlertRulesList.tsx`
+- `components/alerts/AlertsDialog.tsx`
+- `components/alerts/ConditionBuilder.tsx`
+
+---
+
+#### Phase 10C: Push Notification Service
+**Goal**: Implement Web Push API for browser notifications.
+
+**Tasks**:
+- [ ] Set up Web Push with VAPID keys
+- [ ] Create service worker for push notifications
+- [ ] Build notification permission request flow
+- [ ] Store push subscriptions in database
+- [ ] Create notification sending utility
+- [ ] Handle notification clicks (open app to location)
+
+**Technical Details**:
+- Use Web Push API (no external service needed for browser notifications)
+- Generate VAPID keys and store in environment variables
+- Service worker handles background notifications
+- Fallback to in-app notification center if push denied
+
+**Files to Create**:
+- `public/sw.js` - Service worker for push
+- `lib/notifications/web-push.ts` - Push notification utilities
+- `lib/notifications/vapid.ts` - VAPID key management
+- `src/hooks/usePushNotifications.ts` - Hook for managing push subscription
+- `components/notifications/NotificationPermission.tsx` - Permission request UI
+- `supabase/migrations/20260120000002_add_push_subscriptions.sql`
+
+---
+
+#### Phase 10D: Alert Checking Logic
+**Goal**: Implement scheduled checking of alert conditions.
+
+**Tasks**:
+- [ ] Create alert condition evaluation logic
+- [ ] Build weather condition matcher
+- [ ] Implement golden hour proximity checker
+- [ ] Create API route for checking alerts (can be called by cron)
+- [ ] Add rate limiting to prevent notification spam
+- [ ] Implement alert cooldown (don't re-trigger for X hours)
+
+**Architecture Options**:
+1. **Vercel Cron Jobs** (recommended for Hobby plan)
+   - Create `/api/cron/check-alerts` route
+   - Configure in `vercel.json` to run every 15 minutes
+
+2. **Client-side checking** (fallback)
+   - Check conditions when user opens app
+   - Less reliable but no server costs
+
+**Files to Create**:
+- `app/api/cron/check-alerts/route.ts` - Cron endpoint
+- `lib/alerts/condition-matcher.ts` - Evaluate alert conditions
+- `lib/alerts/alert-checker.ts` - Main alert checking logic
+- `vercel.json` - Cron configuration
+
+---
+
+#### Phase 10E: Notification Center UI
+**Goal**: In-app notification history and management.
+
+**Tasks**:
+- [ ] Create notification center dropdown/panel
+- [ ] Show recent alerts with conditions that triggered them
+- [ ] Add "View Location" action from notification
+- [ ] Add notification preferences (quiet hours, frequency limits)
+- [ ] Create notification badge for unread alerts
+
+**Files to Create**:
+- `components/notifications/NotificationCenter.tsx`
+- `components/notifications/NotificationItem.tsx`
+- `components/notifications/NotificationBadge.tsx`
+- `src/stores/notificationStore.ts`
+
+---
+
+### Technical Considerations
+
+**Web Push Setup**:
+```bash
+# Generate VAPID keys
+npx web-push generate-vapid-keys
+```
+
+**Environment Variables**:
+```env
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:alerts@photoscout.app
+```
+
+**Rate Limiting**:
+- Max 1 notification per alert per 6 hours
+- Max 10 notifications per user per day
+- Respect quiet hours (configurable, default 10pm-7am)
+
+### Success Criteria
+- [ ] Users can create alert rules for saved locations
+- [ ] Browser push notifications work when conditions match
+- [ ] Notification center shows alert history
+- [ ] Alerts respect cooldown and rate limits
+- [ ] Users can enable/disable individual alerts
+- [ ] All tests pass
+- [ ] Production build succeeds
+
+---
+
+## 📋 Phase 11: Community Photo Spots (PLANNED)
+
+### Goal
+Enable users to share their photography locations with the community, discover spots shared by others, and build a collaborative database of UK photography locations.
+
+### Overview
+
+**Core Concept**: Users can mark their saved locations as "public" to share with the community. A discovery page shows popular and nearby community spots with photos, ratings, and tips.
+
+**Privacy Model**:
+- Private (default): Only visible to owner
+- Public: Visible to all users, appears in community discovery
+- Unlisted: Accessible via direct link but not in discovery
+
+### Sub-Phases
+
+#### Phase 11A: Public Locations Schema
+**Goal**: Extend locations table for community features.
+
+**Tasks**:
+- [ ] Add visibility enum to locations (private, public, unlisted)
+- [ ] Add community metadata (view_count, favorite_count, featured)
+- [ ] Create `location_favorites` table for user favorites
+- [ ] Create `location_reports` table for moderation
+- [ ] Update RLS policies for public access
+- [ ] Add indexes for community queries
+
+**Database Schema**:
+```sql
+-- Add to locations table
+ALTER TABLE locations ADD COLUMN visibility TEXT DEFAULT 'private'
+  CHECK (visibility IN ('private', 'public', 'unlisted'));
+ALTER TABLE locations ADD COLUMN view_count INTEGER DEFAULT 0;
+ALTER TABLE locations ADD COLUMN favorite_count INTEGER DEFAULT 0;
+ALTER TABLE locations ADD COLUMN is_featured BOOLEAN DEFAULT false;
+ALTER TABLE locations ADD COLUMN featured_at TIMESTAMPTZ;
+
+-- Favorites table
+CREATE TABLE location_favorites (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, location_id)
+);
+
+-- Reports table for moderation
+CREATE TABLE location_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  reporter_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+  reason TEXT NOT NULL CHECK (reason IN ('inappropriate', 'inaccurate', 'private_property', 'dangerous', 'spam', 'other')),
+  details TEXT,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'actioned', 'dismissed')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Files to Create**:
+- `supabase/migrations/20260121000001_add_community_features.sql`
+- `lib/queries/community.ts`
+- `app/actions/community.ts`
+
+---
+
+#### Phase 11B: Community Discovery Page
+**Goal**: Build a page for exploring public photography locations.
+
+**Tasks**:
+- [ ] Create `/discover` page with location grid
+- [ ] Add filtering (by region, tags, distance)
+- [ ] Add sorting (popular, recent, nearest)
+- [ ] Implement infinite scroll or pagination
+- [ ] Show location cards with preview info
+- [ ] Add map view toggle for discovery
+
+**Page Layout**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 🔍 Discover Photo Spots                                     │
+├─────────────────────────────────────────────────────────────┤
+│ [Search locations...] [Region ▼] [Tags ▼] [Sort: Popular ▼] │
+├─────────────────────────────────────────────────────────────┤
+│ [📍 Map View] [📋 Grid View]                                │
+├─────────────────────────────────────────────────────────────┤
+│ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐            │
+│ │ 📸      │ │ 📸      │ │ 📸      │ │ 📸      │            │
+│ │ Name    │ │ Name    │ │ Name    │ │ Name    │            │
+│ │ ⭐ 24   │ │ ⭐ 18   │ │ ⭐ 15   │ │ ⭐ 12   │            │
+│ │ 5.2 km  │ │ 12 km   │ │ 8.3 km  │ │ 3.1 km  │            │
+│ └─────────┘ └─────────┘ └─────────┘ └─────────┘            │
+│                                                             │
+│ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐            │
+│ │ ...     │ │ ...     │ │ ...     │ │ ...     │            │
+│ └─────────┘ └─────────┘ └─────────┘ └─────────┘            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Files to Create**:
+- `app/discover/page.tsx`
+- `components/community/DiscoveryGrid.tsx`
+- `components/community/DiscoveryMap.tsx`
+- `components/community/LocationPreviewCard.tsx`
+- `components/community/DiscoveryFilters.tsx`
+
+---
+
+#### Phase 11C: Location Detail Page
+**Goal**: Public-facing page for viewing shared locations.
+
+**Tasks**:
+- [ ] Create `/spot/[id]` dynamic route
+- [ ] Show full location details (description, notes, photos)
+- [ ] Display current weather and photography conditions
+- [ ] Show nearby POIs and amenities
+- [ ] Add favorite button for logged-in users
+- [ ] Add "Open in App" button to view on main map
+- [ ] Add social sharing (Twitter, Facebook, copy link)
+- [ ] Show similar nearby locations
+
+**Files to Create**:
+- `app/spot/[id]/page.tsx`
+- `components/community/SpotDetail.tsx`
+- `components/community/SpotWeather.tsx`
+- `components/community/SimilarSpots.tsx`
+- `components/community/FavoriteButton.tsx`
+
+---
+
+#### Phase 11D: Sharing & Visibility Controls
+**Goal**: Allow users to control location visibility and share.
+
+**Tasks**:
+- [ ] Add visibility selector to SaveLocationForm
+- [ ] Add visibility selector to EditLocationForm
+- [ ] Create share dialog with visibility options
+- [ ] Generate shareable links for public/unlisted locations
+- [ ] Add "Make Public" quick action on location cards
+- [ ] Show public indicator on owned public locations
+
+**Files to Modify**:
+- `components/locations/SaveLocationForm.tsx` - Add visibility
+- `components/locations/EditLocationForm.tsx` - Add visibility
+- `components/locations/ShareLocationDialog.tsx` - Enhance for community
+- `components/locations/LocationCard.tsx` - Show public indicator
+
+---
+
+#### Phase 11E: Favorites & User Profiles
+**Goal**: Allow users to favorite locations and view their profile.
+
+**Tasks**:
+- [ ] Create favorites store and hooks
+- [ ] Add favorite button to location cards and detail pages
+- [ ] Create "My Favorites" section in sidebar or separate page
+- [ ] Create basic user profile page showing public locations
+- [ ] Add favorite count display on public locations
+- [ ] Track view counts for analytics
+
+**Files to Create**:
+- `src/stores/favoritesStore.ts`
+- `src/hooks/useFavorites.ts`
+- `components/community/FavoritesList.tsx`
+- `app/profile/[userId]/page.tsx`
+- `components/community/UserProfile.tsx`
+
+---
+
+### Technical Considerations
+
+**SEO for Public Pages**:
+- Generate metadata for `/spot/[id]` pages
+- Add Open Graph tags for social sharing
+- Create sitemap for public locations
+
+**Moderation**:
+- Report button on all public locations
+- Admin review queue (future enhancement)
+- Auto-hide locations with multiple reports
+
+**Performance**:
+- Cache popular locations
+- Use PostGIS for efficient nearby queries
+- Lazy load images in discovery grid
+
+### Success Criteria
+- [ ] Users can set locations as public/private/unlisted
+- [ ] Discovery page shows community locations with filters
+- [ ] Public location detail pages work and are shareable
+- [ ] Users can favorite locations
+- [ ] View and favorite counts tracked
+- [ ] All tests pass
+- [ ] Production build succeeds
+
+---
+
+## 📋 Phase 12: Photo Upload & Tagging (PLANNED)
+
+### Goal
+Allow users to upload their own photos to locations, automatically extract GPS coordinates from EXIF data, and build a personal photo library linked to photography spots.
+
+### Overview
+
+**Core Concept**: Users upload photos which are stored in Supabase Storage. EXIF data is extracted to auto-suggest location coordinates. Photos can be linked to saved locations or create new locations.
+
+**Storage**: Supabase Storage (included in free tier, 1GB limit)
+
+### Sub-Phases
+
+#### Phase 12A: Supabase Storage Setup
+**Goal**: Configure storage buckets and policies for photo uploads.
+
+**Tasks**:
+- [ ] Create `photos` storage bucket in Supabase
+- [ ] Configure RLS policies for user-owned photos
+- [ ] Set up image transformation (thumbnails, optimized)
+- [ ] Create `user_photos` database table for metadata
+- [ ] Add storage size limits per user
+
+**Database Schema**:
+```sql
+CREATE TABLE user_photos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
+  storage_path TEXT NOT NULL,
+  filename TEXT NOT NULL,
+  file_size INTEGER NOT NULL,
+  mime_type TEXT NOT NULL,
+  width INTEGER,
+  height INTEGER,
+  -- EXIF data
+  exif_data JSONB,
+  taken_at TIMESTAMPTZ,
+  camera_make TEXT,
+  camera_model TEXT,
+  focal_length TEXT,
+  aperture TEXT,
+  shutter_speed TEXT,
+  iso INTEGER,
+  -- GPS from EXIF
+  exif_latitude FLOAT,
+  exif_longitude FLOAT,
+  -- User metadata
+  title TEXT,
+  description TEXT,
+  is_public BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX user_photos_user_id_idx ON user_photos(user_id);
+CREATE INDEX user_photos_location_id_idx ON user_photos(location_id);
+```
+
+**Files to Create**:
+- `supabase/migrations/20260122000001_add_user_photos.sql`
+- `lib/supabase/storage.ts` - Storage utilities
+- `lib/queries/photos.ts` - Photo database queries
+- `app/actions/photos.ts` - Photo server actions
+
+---
+
+#### Phase 12B: Photo Upload Component
+**Goal**: Build drag-and-drop photo upload with progress.
+
+**Tasks**:
+- [ ] Create `PhotoUploader` component with drag-and-drop
+- [ ] Add upload progress indicator
+- [ ] Support multiple file upload
+- [ ] Validate file types (JPEG, PNG, WebP)
+- [ ] Validate file size (max 10MB per photo)
+- [ ] Show upload preview thumbnails
+- [ ] Handle upload errors gracefully
+
+**UI Component**:
+```
+┌─────────────────────────────────────────┐
+│ 📸 Upload Photos                        │
+├─────────────────────────────────────────┤
+│ ┌─────────────────────────────────────┐ │
+│ │                                     │ │
+│ │     Drag photos here or click      │ │
+│ │          to browse                  │ │
+│ │                                     │ │
+│ │     JPEG, PNG, WebP up to 10MB     │ │
+│ │                                     │ │
+│ └─────────────────────────────────────┘ │
+├─────────────────────────────────────────┤
+│ Uploading: photo1.jpg                   │
+│ [████████████░░░░░░░░] 65%              │
+├─────────────────────────────────────────┤
+│ ✓ photo2.jpg - Uploaded                 │
+│ ✓ photo3.jpg - Uploaded                 │
+└─────────────────────────────────────────┘
+```
+
+**Files to Create**:
+- `components/photos/PhotoUploader.tsx`
+- `components/photos/UploadProgress.tsx`
+- `components/photos/UploadPreview.tsx`
+- `src/hooks/usePhotoUpload.ts`
+
+---
+
+#### Phase 12C: EXIF Data Extraction
+**Goal**: Extract and display photo metadata including GPS coordinates.
+
+**Tasks**:
+- [ ] Integrate EXIF parsing library (exifr or exif-js)
+- [ ] Extract GPS coordinates from photos
+- [ ] Extract camera settings (aperture, shutter, ISO, focal length)
+- [ ] Extract capture timestamp
+- [ ] Show EXIF data in photo details
+- [ ] Auto-suggest location from GPS coordinates
+
+**EXIF Fields to Extract**:
+- GPS Latitude/Longitude
+- DateTimeOriginal
+- Make, Model (camera)
+- FocalLength
+- FNumber (aperture)
+- ExposureTime (shutter speed)
+- ISOSpeedRatings
+- Orientation
+
+**Files to Create**:
+- `lib/photos/exif-parser.ts` - EXIF extraction utilities
+- `components/photos/ExifDisplay.tsx` - Show camera settings
+- `components/photos/LocationSuggestion.tsx` - Suggest location from GPS
+
+---
+
+#### Phase 12D: Photo Library & Management
+**Goal**: Build photo gallery for managing uploaded photos.
+
+**Tasks**:
+- [ ] Create `/photos` page for user's photo library
+- [ ] Create photo grid with lazy loading
+- [ ] Add photo detail view/dialog
+- [ ] Enable photo editing (title, description)
+- [ ] Enable photo deletion with confirmation
+- [ ] Filter photos by location, date, unlinked
+- [ ] Bulk actions (delete, link to location)
+
+**Files to Create**:
+- `app/photos/page.tsx`
+- `components/photos/PhotoLibrary.tsx`
+- `components/photos/PhotoGrid.tsx`
+- `components/photos/PhotoDetailDialog.tsx`
+- `components/photos/PhotoEditForm.tsx`
+- `src/stores/photoLibraryStore.ts`
+
+---
+
+#### Phase 12E: Location-Photo Linking
+**Goal**: Connect photos to saved locations.
+
+**Tasks**:
+- [ ] Add "Link to Location" action on photos
+- [ ] Show location selector dialog
+- [ ] Auto-suggest nearest saved location based on GPS
+- [ ] Create location from photo GPS (new location flow)
+- [ ] Show linked photos on location cards
+- [ ] Show photo count on map markers
+- [ ] Add photos section to location detail view
+
+**Files to Create**:
+- `components/photos/LinkToLocationDialog.tsx`
+- `components/photos/LocationPhotoGallery.tsx`
+- `components/locations/LocationPhotos.tsx`
+
+**Files to Modify**:
+- `components/locations/LocationCard.tsx` - Show photo thumbnails
+- `components/map/SavedLocationMarkers.tsx` - Show photo count badge
+
+---
+
+### Technical Considerations
+
+**Storage Limits**:
+- Supabase free tier: 1GB storage
+- Implement per-user quotas (e.g., 100MB per user)
+- Show storage usage in settings
+
+**Image Optimization**:
+- Generate thumbnails on upload (200x200)
+- Generate medium size for galleries (800x600)
+- Use Supabase image transformations
+
+**Dependencies**:
+```bash
+npm install exifr  # EXIF parsing
+```
+
+**Privacy**:
+- Strip EXIF GPS data from public photos (optional setting)
+- Photos private by default
+- Warn users about GPS data in photos
+
+### Success Criteria
+- [ ] Users can upload photos via drag-and-drop
+- [ ] EXIF data extracted and displayed (camera settings, GPS)
+- [ ] Photos can be linked to saved locations
+- [ ] Photo library page with filtering and management
+- [ ] GPS coordinates auto-suggest location matches
+- [ ] All tests pass
+- [ ] Production build succeeds
+
+---
+
+## 📋 Phase 13: Route Planning (PLANNED)
+
+### Goal
+Enable photographers to plan multi-location shoots with route optimization, travel time estimates, and exportable itineraries.
+
+### Overview
+
+**Core Concept**: Users create "trips" with multiple photography locations, get optimal route suggestions, see travel times between stops, and export the route for navigation.
+
+**Routing API**: OpenRouteService (free tier: 2000 requests/day)
+
+### Sub-Phases
+
+#### Phase 13A: Trips Database Schema
+**Goal**: Create data model for multi-location trips.
+
+**Tasks**:
+- [ ] Create `trips` table for trip metadata
+- [ ] Create `trip_stops` table for ordered locations
+- [ ] Add trip-related RLS policies
+- [ ] Generate TypeScript types
+- [ ] Create trip query functions
+
+**Database Schema**:
+```sql
+CREATE TABLE trips (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  trip_date DATE,
+  start_time TIME,
+  transport_mode TEXT DEFAULT 'driving' CHECK (transport_mode IN ('driving', 'walking', 'cycling')),
+  total_distance_meters INTEGER,
+  total_duration_seconds INTEGER,
+  is_optimized BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE trip_stops (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
+  -- Allow custom stops not from saved locations
+  custom_name TEXT,
+  custom_lat FLOAT,
+  custom_lng FLOAT,
+  stop_order INTEGER NOT NULL,
+  planned_arrival TIME,
+  planned_duration_minutes INTEGER DEFAULT 60,
+  notes TEXT,
+  -- Routing info to next stop
+  distance_to_next_meters INTEGER,
+  duration_to_next_seconds INTEGER,
+  route_geometry JSONB, -- GeoJSON LineString
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX trip_stops_trip_id_idx ON trip_stops(trip_id);
+CREATE INDEX trip_stops_order_idx ON trip_stops(trip_id, stop_order);
+```
+
+**Files to Create**:
+- `supabase/migrations/20260123000001_add_trips.sql`
+- `src/types/trips.types.ts`
+- `lib/queries/trips.ts`
+- `app/actions/trips.ts`
+
+---
+
+#### Phase 13B: OpenRouteService Integration
+**Goal**: Integrate routing API for directions and travel times.
+
+**Tasks**:
+- [ ] Create OpenRouteService API client
+- [ ] Implement route calculation between points
+- [ ] Support multiple transport modes (driving, walking, cycling)
+- [ ] Parse route geometry for map display
+- [ ] Cache route calculations
+- [ ] Handle API errors and rate limits
+
+**API Endpoints**:
+- `POST /v2/directions/{profile}` - Get route between points
+- Profiles: `driving-car`, `foot-walking`, `cycling-regular`
+
+**Files to Create**:
+- `lib/api/openrouteservice.ts` - API client
+- `src/types/routing.types.ts` - Route types
+- `app/actions/routing.ts` - Server actions
+
+---
+
+#### Phase 13C: Trip Planner UI
+**Goal**: Build interface for creating and editing trips.
+
+**Tasks**:
+- [ ] Create trip creation dialog/page
+- [ ] Build stop list with drag-to-reorder
+- [ ] Add stop from saved locations or map click
+- [ ] Show travel time between stops
+- [ ] Add planned duration at each stop
+- [ ] Calculate total trip duration
+- [ ] Show golden hour windows for trip date
+
+**UI Layout**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 🗺️ Plan Trip: Lake District Sunrise                    [✕]  │
+├─────────────────────────────────────────────────────────────┤
+│ Date: [📅 Jan 25, 2026]  Start: [05:00]  Mode: [🚗 Driving] │
+├──────────────────────────┬──────────────────────────────────┤
+│ Stops                    │                                  │
+│ ─────────────────────────│                                  │
+│ 1. 📍 Home               │         MAP                      │
+│    ↓ 45 min (32 km)      │    (shows route polyline)        │
+│ 2. 📍 Castlerigg Stone   │                                  │
+│    ⏱️ Stay: 1h 30m        │         ━━━━━━━                  │
+│    🌅 Golden: 07:15-07:52│            ╲                     │
+│    ↓ 20 min (15 km)      │             ╲                    │
+│ 3. 📍 Derwentwater       │              ●━━━●               │
+│    ⏱️ Stay: 2h           │                                  │
+│    ↓ 35 min (28 km)      │                                  │
+│ 4. 📍 Home               │                                  │
+│                          │                                  │
+│ [+ Add Stop]             │                                  │
+├──────────────────────────┴──────────────────────────────────┤
+│ Total: 4 stops • 75 km • 1h 40m driving • 3h 30m shooting   │
+├─────────────────────────────────────────────────────────────┤
+│ [Cancel]  [Optimize Route]  [Export GPX]  [Save Trip]       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Files to Create**:
+- `components/trips/TripPlanner.tsx`
+- `components/trips/TripStopList.tsx`
+- `components/trips/TripStopCard.tsx`
+- `components/trips/AddStopDialog.tsx`
+- `components/trips/TripSummary.tsx`
+- `src/stores/tripPlannerStore.ts`
+
+---
+
+#### Phase 13D: Route Display on Map
+**Goal**: Show planned route on the map with markers and polyline.
+
+**Tasks**:
+- [ ] Create route polyline layer on map
+- [ ] Show numbered markers for each stop
+- [ ] Highlight active/selected stop
+- [ ] Allow adding stops by clicking map
+- [ ] Show route info popup on polyline hover
+- [ ] Animate route drawing
+
+**Files to Create**:
+- `components/map/TripRouteLayer.tsx`
+- `components/map/TripStopMarkers.tsx`
+- `lib/utils/route-geometry.ts` - GeoJSON utilities
+
+---
+
+#### Phase 13E: Route Optimization
+**Goal**: Suggest optimal stop order to minimize travel time.
+
+**Tasks**:
+- [ ] Implement traveling salesman approximation
+- [ ] Use OpenRouteService optimization endpoint (if available)
+- [ ] Show comparison (original vs optimized)
+- [ ] Allow user to accept/reject optimization
+- [ ] Consider time constraints (golden hour windows)
+
+**Files to Create**:
+- `lib/trips/route-optimizer.ts`
+- `components/trips/OptimizationDialog.tsx`
+
+---
+
+#### Phase 13F: Trip Export & Sharing
+**Goal**: Export trips for use in navigation apps.
+
+**Tasks**:
+- [ ] Export trip to GPX format (for GPS devices)
+- [ ] Export trip to KML format (for Google Earth)
+- [ ] Generate printable trip summary
+- [ ] Create shareable trip links
+- [ ] Export to Google Maps directions URL
+
+**Files to Create**:
+- `lib/trips/export-gpx.ts`
+- `lib/trips/export-kml.ts`
+- `components/trips/TripExportDialog.tsx`
+- `app/trip/[id]/page.tsx` - Shareable trip page
+
+---
+
+### Technical Considerations
+
+**OpenRouteService Setup**:
+```env
+OPENROUTESERVICE_API_KEY=your_api_key
+```
+
+**Rate Limiting**:
+- Free tier: 2000 requests/day
+- Cache calculated routes
+- Batch waypoint calculations
+
+**Performance**:
+- Only calculate routes when stops change
+- Debounce route recalculation
+- Show loading state during route calculation
+
+### Success Criteria
+- [ ] Users can create trips with multiple stops
+- [ ] Routes calculated with travel times between stops
+- [ ] Route displayed on map with polyline
+- [ ] Drag-to-reorder stops works smoothly
+- [ ] Route optimization suggests better order
+- [ ] Export to GPX/KML works
+- [ ] All tests pass
+- [ ] Production build succeeds
+
+---
+
+## 📋 Phase 14: Location Comparison (PLANNED)
+
+### Goal
+Allow photographers to compare multiple locations side-by-side to choose the best spot for their shoot based on weather, lighting, and conditions.
+
+### Overview
+
+**Core Concept**: Users select 2-4 locations and see them in a comparison view with weather, sun times, photography scores, and conditions displayed side-by-side.
+
+### Sub-Phases
+
+#### Phase 14A: Comparison Selection UI
+**Goal**: Allow users to select locations for comparison.
+
+**Tasks**:
+- [ ] Add "Compare" checkbox/button to location cards
+- [ ] Create comparison selection bar (shows selected locations)
+- [ ] Limit selection to 4 locations max
+- [ ] Add "Clear Selection" and "Compare Now" buttons
+- [ ] Store comparison selection in store
+- [ ] Add comparison mode to map (highlight selected)
+
+**UI Component**:
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📊 Compare Locations (3 selected)              [Clear] [Go] │
+│ [Castlerigg ✕] [Derwentwater ✕] [Buttermere ✕] [+ Add]      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Files to Create**:
+- `src/stores/comparisonStore.ts`
+- `components/comparison/ComparisonSelectionBar.tsx`
+- `components/comparison/CompareCheckbox.tsx`
+
+**Files to Modify**:
+- `components/locations/LocationCard.tsx` - Add compare checkbox
+- `components/locations/SavedLocationsList.tsx` - Add selection bar
+
+---
+
+#### Phase 14B: Comparison View Page
+**Goal**: Create dedicated comparison view with side-by-side display.
+
+**Tasks**:
+- [ ] Create `/compare` page
+- [ ] Build responsive comparison grid (2-4 columns)
+- [ ] Fetch weather data for all locations in parallel
+- [ ] Calculate sun times for all locations
+- [ ] Show photography scores with breakdown
+- [ ] Highlight "best" values in each category
+- [ ] Add date picker to compare for different dates
+
+**Page Layout**:
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 📊 Compare Locations                    Date: [📅 Jan 25, 2026] [Today] │
+├─────────────────────────────────────────────────────────────────────────┤
+│     Castlerigg        │    Derwentwater      │    Buttermere           │
+│     ────────────      │    ────────────      │    ────────────         │
+│                       │                      │                          │
+│ 📸 Score              │ 📸 Score             │ 📸 Score                 │
+│ ████████░░ 78 ⭐      │ ███████░░░ 72        │ █████████░ 85 ⭐⭐       │
+│                       │                      │                          │
+│ ☀️ Weather            │ ☀️ Weather           │ ☀️ Weather               │
+│ Partly Cloudy         │ Cloudy               │ Clear ⭐                 │
+│ 8°C                   │ 7°C                  │ 6°C                      │
+│                       │                      │                          │
+│ ☁️ Cloud Cover        │ ☁️ Cloud Cover       │ ☁️ Cloud Cover           │
+│ 45%                   │ 68%                  │ 12% ⭐                   │
+│                       │                      │                          │
+│ 👁️ Visibility         │ 👁️ Visibility        │ 👁️ Visibility            │
+│ 15 km ⭐              │ 10 km                │ 12 km                    │
+│                       │                      │                          │
+│ 🌅 Golden Hour        │ 🌅 Golden Hour       │ 🌅 Golden Hour           │
+│ 16:32 - 17:08         │ 16:30 - 17:05        │ 16:35 - 17:12 ⭐         │
+│ (36 min)              │ (35 min)             │ (37 min)                 │
+│                       │                      │                          │
+│ 🌬️ Wind               │ 🌬️ Wind              │ 🌬️ Wind                  │
+│ 12 mph NW             │ 18 mph W             │ 8 mph N ⭐               │
+│                       │                      │                          │
+│ 📍 Distance           │ 📍 Distance          │ 📍 Distance              │
+│ 45 km                 │ 52 km                │ 68 km                    │
+│                       │                      │                          │
+│ [View] [Remove]       │ [View] [Remove]      │ [View] [Remove]          │
+└─────────────────────────────────────────────────────────────────────────┘
+│                                                                         │
+│ 💡 Recommendation: Buttermere has the best conditions today with        │
+│    clear skies, low wind, and the longest golden hour window.           │
+│                                                                         │
+│    [📍 View Buttermere on Map]                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Files to Create**:
+- `app/compare/page.tsx`
+- `components/comparison/ComparisonGrid.tsx`
+- `components/comparison/LocationComparisonCard.tsx`
+- `components/comparison/ComparisonRecommendation.tsx`
+
+---
+
+#### Phase 14C: Mini Map Comparison
+**Goal**: Show small maps for each location in comparison view.
+
+**Tasks**:
+- [ ] Create mini map component for comparison cards
+- [ ] Show location marker and radius on mini map
+- [ ] Add sun position indicator (direction of golden hour light)
+- [ ] Make mini maps interactive (click to expand)
+
+**Files to Create**:
+- `components/comparison/MiniMap.tsx`
+- `components/comparison/SunPositionIndicator.tsx`
+
+---
+
+#### Phase 14D: Comparison Recommendations
+**Goal**: AI-style recommendations based on comparison data.
+
+**Tasks**:
+- [ ] Create scoring comparison algorithm
+- [ ] Identify "winner" in each category
+- [ ] Generate natural language recommendation
+- [ ] Consider user preferences in recommendation
+- [ ] Show trade-offs (e.g., "Better weather but longer drive")
+
+**Recommendation Logic**:
+```typescript
+interface ComparisonResult {
+  overallWinner: Location;
+  categoryWinners: {
+    weather: Location;
+    lighting: Location;
+    wind: Location;
+    visibility: Location;
+    goldenHourDuration: Location;
+  };
+  recommendation: string;
+  tradeoffs: string[];
+}
+```
+
+**Files to Create**:
+- `lib/comparison/compare-locations.ts`
+- `lib/comparison/generate-recommendation.ts`
+
+---
+
+#### Phase 14E: Quick Compare from Map
+**Goal**: Enable quick comparison without leaving the main map view.
+
+**Tasks**:
+- [ ] Add split-view mode to main map
+- [ ] Show 2-location comparison in floating panel
+- [ ] Enable "Compare with selected" on location markers
+- [ ] Add comparison mini-view in bottom sheet
+
+**Files to Create**:
+- `components/comparison/QuickComparePanel.tsx`
+- `components/comparison/SplitMapView.tsx`
+
+---
+
+### Technical Considerations
+
+**Performance**:
+- Fetch weather for all locations in parallel
+- Cache comparison results for same date
+- Lazy load mini maps
+
+**Responsive Design**:
+- Stack cards vertically on mobile
+- Swipeable card carousel on small screens
+- Full grid on desktop
+
+**Accessibility**:
+- Screen reader friendly comparison
+- Keyboard navigation between cards
+- High contrast for "best" indicators
+
+### Success Criteria
+- [ ] Users can select 2-4 locations for comparison
+- [ ] Comparison page shows side-by-side data
+- [ ] Best values highlighted in each category
+- [ ] Recommendation generated based on conditions
+- [ ] Works on mobile with swipeable cards
+- [ ] Date picker allows comparing different days
+- [ ] All tests pass
+- [ ] Production build succeeds
+
+---
+
+## 🚀 Future Considerations
+
+After completing Phases 10-14, potential future enhancements include:
+
+- **Deployment to Vercel** - Production hosting with edge functions
+- **Mobile App** - React Native or PWA for native experience
+- **AI Photo Analysis** - Analyze uploaded photos for composition tips
+- **Tide Information** - Coastal photography planning
+- **Aurora/ISS Tracking** - Night sky photography features
+- **Social Features** - Follow photographers, activity feed
+- **Premium Tier** - Advanced features for paying users
 
 ---
 
