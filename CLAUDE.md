@@ -34,7 +34,43 @@ git pull origin main                   # Pull latest changes
 ```
 
 ## Planning
-When you are adding new features to PLAN.md, add each feature as a new phase, numbered, for example Phase 1, Phase 2 etc. Do not add new features as Phase 1.1, 1.2 etc. Every new feature should have its own phase 
+
+### File Structure
+- **PLAN.md** - Index/summary with progress tracker and phase links
+- **docs/phases/** - Individual phase files with full details
+
+### Adding New Phases
+1. Create new file: `docs/phases/phase-NN-descriptive-name.md`
+2. Update PLAN.md progress tracker table with new row
+3. Add brief summary to "Phase Summaries" section in PLAN.md
+
+### Phase File Template
+```markdown
+# Phase NN: Feature Name
+
+**Status**: 📋 Planned
+**Completion**: 0%
+
+## Goal
+Brief description of what this phase accomplishes.
+
+## Sub-Phases (if needed)
+### Phase NNA: Sub-task
+...
+
+## Files to Create
+- `path/to/file.ts` - Description
+
+## Success Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+```
+
+### Rules
+- Each major feature gets its own numbered phase (Phase 1, Phase 2, etc.)
+- Do NOT use sub-numbering for new features (no Phase 1.1, 1.2)
+- Sub-phases within a phase use letters (Phase 7A, 7B, 7C)
+- Keep PLAN.md under 300 lines - details go in phase files 
 
 ## Git Workflow
 
