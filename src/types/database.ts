@@ -174,40 +174,180 @@ export type Database = {
         }
         Relationships: []
       }
-      weather_alerts: {
+      alert_rules: {
         Row: {
-          alert_type: string
-          created_at: string | null
           id: string
-          is_active: boolean | null
-          location_id: string
           user_id: string
+          location_id: string
+          name: string
+          alert_type: string
+          conditions: Json
+          time_window: Json | null
+          days_of_week: number[] | null
+          lead_time_minutes: number
+          is_active: boolean
+          last_triggered_at: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          alert_type: string
-          created_at?: string | null
           id?: string
-          is_active?: boolean | null
-          location_id: string
           user_id: string
+          location_id: string
+          name: string
+          alert_type: string
+          conditions?: Json
+          time_window?: Json | null
+          days_of_week?: number[] | null
+          lead_time_minutes?: number
+          is_active?: boolean
+          last_triggered_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          alert_type?: string
-          created_at?: string | null
           id?: string
-          is_active?: boolean | null
-          location_id?: string
           user_id?: string
+          location_id?: string
+          name?: string
+          alert_type?: string
+          conditions?: Json
+          time_window?: Json | null
+          days_of_week?: number[] | null
+          lead_time_minutes?: number
+          is_active?: boolean
+          last_triggered_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "weather_alerts_location_id_fkey"
+            foreignKeyName: "alert_rules_location_id_fkey"
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
+      }
+      alert_history: {
+        Row: {
+          id: string
+          alert_rule_id: string
+          user_id: string
+          triggered_at: string
+          conditions_snapshot: Json
+          notification_sent: boolean
+          notification_channel: string | null
+          is_read: boolean
+          read_at: string | null
+        }
+        Insert: {
+          id?: string
+          alert_rule_id: string
+          user_id: string
+          triggered_at?: string
+          conditions_snapshot: Json
+          notification_sent?: boolean
+          notification_channel?: string | null
+          is_read?: boolean
+          read_at?: string | null
+        }
+        Update: {
+          id?: string
+          alert_rule_id?: string
+          user_id?: string
+          triggered_at?: string
+          conditions_snapshot?: Json
+          notification_sent?: boolean
+          notification_channel?: string | null
+          is_read?: boolean
+          read_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_history_alert_rule_id_fkey"
+            columns: ["alert_rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          subscription: Json
+          user_agent: string | null
+          device_name: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          subscription: Json
+          user_agent?: string | null
+          device_name?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          subscription?: Json
+          user_agent?: string | null
+          device_name?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          notifications_enabled: boolean
+          push_enabled: boolean
+          in_app_enabled: boolean
+          quiet_hours_start: number | null
+          quiet_hours_end: number | null
+          max_notifications_per_day: number
+          cooldown_hours: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          notifications_enabled?: boolean
+          push_enabled?: boolean
+          in_app_enabled?: boolean
+          quiet_hours_start?: number | null
+          quiet_hours_end?: number | null
+          max_notifications_per_day?: number
+          cooldown_hours?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          notifications_enabled?: boolean
+          push_enabled?: boolean
+          in_app_enabled?: boolean
+          quiet_hours_start?: number | null
+          quiet_hours_end?: number | null
+          max_notifications_per_day?: number
+          cooldown_hours?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

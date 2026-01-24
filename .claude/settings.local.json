@@ -30,7 +30,10 @@
       "Bash(ls:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(git reset:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(psql:*)",
+      "Bash(dir /s \"D:\\\\Cursor\\\\photoscout\\\\src\")",
+      "Bash(cd:*)"
     ]
   }
 }
