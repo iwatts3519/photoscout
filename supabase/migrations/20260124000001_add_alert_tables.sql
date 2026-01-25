@@ -56,10 +56,12 @@ CREATE TABLE push_subscriptions (
   device_name TEXT,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  -- Ensure one subscription per endpoint per user
-  UNIQUE(user_id, (subscription->>'endpoint'))
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Create unique index on user_id and subscription endpoint (unique constraint on expression)
+CREATE UNIQUE INDEX push_subscriptions_user_endpoint_idx
+  ON push_subscriptions(user_id, (subscription->>'endpoint'));
 
 -- Create notification_preferences table for user settings
 CREATE TABLE notification_preferences (

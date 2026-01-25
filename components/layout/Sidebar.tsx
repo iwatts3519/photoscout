@@ -10,11 +10,13 @@ import {
 } from '@/src/stores/locationHistoryStore';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { MapPin, ChevronDown, ChevronRight, Bookmark, Clock } from 'lucide-react';
+import { MapPin, ChevronDown, ChevronRight, Bookmark, Clock, Compass, Heart } from 'lucide-react';
+import Link from 'next/link';
 import { WeatherSummary } from '@/components/weather/WeatherSummary';
 import { SaveLocationForm } from '@/components/locations/SaveLocationForm';
 import { SavedLocationsList } from '@/components/locations/SavedLocationsList';
 import { RecentlyViewed } from '@/components/locations/RecentlyViewed';
+import { FavoritesList } from '@/components/locations/FavoritesList';
 import { POIFiltersCompact } from '@/components/map/POIFiltersCompact';
 import { LocationSearch } from '@/components/map/LocationSearch';
 import { DateTimePicker } from '@/components/shared/DateTimePicker';
@@ -41,8 +43,10 @@ export function Sidebar() {
   const {
     savedLocationsCollapsed,
     recentlyViewedCollapsed,
+    favoritesCollapsed,
     toggleSavedLocationsCollapsed,
     toggleRecentlyViewedCollapsed,
+    toggleFavoritesCollapsed,
   } = useUIStore();
   const { addToHistory } = useLocationHistoryStore();
   const { user } = useAuth();
@@ -117,9 +121,18 @@ export function Sidebar() {
     <div className="w-full h-full overflow-y-auto bg-background">
       <div className="p-4 space-y-4">
         {/* Header */}
-        <div className="flex items-center gap-2 pb-2 border-b">
-          <MapPin className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">PhotoScout</h2>
+        <div className="flex items-center justify-between pb-2 border-b">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            <h2 className="font-semibold">PhotoScout</h2>
+          </div>
+          <Link
+            href="/discover"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            <Compass className="h-3.5 w-3.5" />
+            Discover
+          </Link>
         </div>
 
         {/* Location Search - Always visible */}
@@ -221,6 +234,29 @@ export function Sidebar() {
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-2">
               <SavedLocationsList />
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {/* Favorites - Collapsible */}
+        {user && (
+          <Collapsible
+            open={!favoritesCollapsed}
+            onOpenChange={() => toggleFavoritesCollapsed()}
+          >
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 hover:bg-accent rounded-lg px-2 -mx-2 transition-colors">
+              <div className="flex items-center gap-2">
+                <Heart className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Favorites</span>
+              </div>
+              {favoritesCollapsed ? (
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-2">
+              <FavoritesList />
             </CollapsibleContent>
           </Collapsible>
         )}

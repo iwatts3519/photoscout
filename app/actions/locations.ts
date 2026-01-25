@@ -16,13 +16,15 @@ const coordinatesSchema = z.object({
   lng: z.number().min(-180).max(180),
 });
 
+import { visibilitySchema, type Visibility } from '@/src/types/community.types';
+
 const createLocationSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
   description: z.string().max(500, 'Description is too long').optional(),
   coordinates: coordinatesSchema,
   radius_meters: z.number().min(100).max(50000).optional(),
   tags: z.array(z.string()).optional(),
-  is_public: z.boolean().optional(),
+  visibility: visibilitySchema.optional(),
   collection_id: z.string().uuid().nullable().optional(),
   notes: z.string().max(2000, 'Notes are too long').optional(),
   best_time_to_visit: z.string().max(500, 'Best time is too long').optional(),
@@ -33,7 +35,7 @@ const updateLocationSchema = z.object({
   description: z.string().max(500).optional(),
   radius_meters: z.number().min(100).max(50000).optional(),
   tags: z.array(z.string()).optional(),
-  is_public: z.boolean().optional(),
+  visibility: visibilitySchema.optional(),
   collection_id: z.string().uuid().nullable().optional(),
   notes: z.string().max(2000).optional(),
   best_time_to_visit: z.string().max(500).optional(),
@@ -66,7 +68,7 @@ export async function fetchUserLocations(): Promise<{
     // Use raw SQL to extract lat/lng from PostGIS geography
     const { data: rawLocations, error: queryError } = await supabase
       .from('locations')
-      .select('id, user_id, name, description, radius_meters, tags, is_public, created_at, updated_at, coordinates, collection_id, notes, best_time_to_visit, last_visited')
+      .select('id, user_id, name, description, radius_meters, tags, visibility, created_at, updated_at, coordinates, collection_id, notes, best_time_to_visit, last_visited, view_count, favorite_count')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -128,7 +130,7 @@ export async function createLocation(input: {
   coordinates: { lat: number; lng: number };
   radius_meters?: number;
   tags?: string[];
-  is_public?: boolean;
+  visibility?: Visibility;
   collection_id?: string | null;
   notes?: string;
   best_time_to_visit?: string;
@@ -172,7 +174,7 @@ export async function createLocation(input: {
       coordinates: coordinatesGeoJSON as unknown,
       radius_meters: result.data.radius_meters || 1000,
       tags: result.data.tags || null,
-      is_public: result.data.is_public || false,
+      visibility: result.data.visibility || 'private',
       collection_id: result.data.collection_id || null,
       notes: result.data.notes || null,
       best_time_to_visit: result.data.best_time_to_visit || null,
@@ -203,7 +205,7 @@ export async function updateLocationAction(
     description?: string;
     radius_meters?: number;
     tags?: string[];
-    is_public?: boolean;
+    visibility?: Visibility;
     collection_id?: string | null;
     notes?: string;
     best_time_to_visit?: string;

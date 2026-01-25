@@ -191,7 +191,7 @@ export const FloatingLocationCard = React.memo(function FloatingLocationCard({ c
         name: locationName.trim(),
         coordinates: selectedLocation,
         radius_meters: radius,
-        is_public: false,
+        visibility: 'private',
       });
 
       if (error) {

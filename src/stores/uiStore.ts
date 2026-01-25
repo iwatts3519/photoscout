@@ -19,6 +19,7 @@ interface UIState {
   // Sidebar sections (collapsed state)
   savedLocationsCollapsed: boolean;
   recentlyViewedCollapsed: boolean;
+  favoritesCollapsed: boolean;
 
   // Actions
   openFloatingCard: (card: FloatingCardType) => void;
@@ -32,8 +33,10 @@ interface UIState {
 
   setSavedLocationsCollapsed: (collapsed: boolean) => void;
   setRecentlyViewedCollapsed: (collapsed: boolean) => void;
+  setFavoritesCollapsed: (collapsed: boolean) => void;
   toggleSavedLocationsCollapsed: () => void;
   toggleRecentlyViewedCollapsed: () => void;
+  toggleFavoritesCollapsed: () => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
@@ -43,6 +46,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   bottomSheetExpanded: false,
   savedLocationsCollapsed: true,
   recentlyViewedCollapsed: true,
+  favoritesCollapsed: true,
 
   // Floating card actions
   openFloatingCard: (card) => {
@@ -102,5 +106,13 @@ export const useUIStore = create<UIState>((set, get) => ({
 
   toggleRecentlyViewedCollapsed: () => {
     set((state) => ({ recentlyViewedCollapsed: !state.recentlyViewedCollapsed }));
+  },
+
+  setFavoritesCollapsed: (collapsed) => {
+    set({ favoritesCollapsed: collapsed });
+  },
+
+  toggleFavoritesCollapsed: () => {
+    set((state) => ({ favoritesCollapsed: !state.favoritesCollapsed }));
   },
 }));

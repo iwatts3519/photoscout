@@ -11,7 +11,9 @@ import { createLocation } from '@/app/actions/locations';
 import { useLocationStore } from '@/src/stores/locationStore';
 import { useCollectionStore } from '@/src/stores/collectionStore';
 import { CollectionSelector } from './CollectionSelector';
+import { VisibilitySelector } from './VisibilitySelector';
 import { toast } from 'sonner';
+import type { Visibility } from '@/src/types/community.types';
 
 const locationSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
@@ -37,6 +39,7 @@ export function SaveLocationForm({
   const [tags, setTags] = useState('');
   const [notes, setNotes] = useState('');
   const [bestTimeToVisit, setBestTimeToVisit] = useState('');
+  const [visibility, setVisibility] = useState<Visibility>('private');
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -83,7 +86,7 @@ export function SaveLocationForm({
         coordinates,
         radius_meters: radius,
         tags: tagArray.length > 0 ? tagArray : undefined,
-        is_public: false,
+        visibility,
         collection_id: collectionId,
         notes: result.data.notes,
         best_time_to_visit: result.data.best_time_to_visit,
@@ -112,6 +115,7 @@ export function SaveLocationForm({
         setTags('');
         setNotes('');
         setBestTimeToVisit('');
+        setVisibility('private');
         setCollectionId(null);
         setShowAdvanced(false);
 
@@ -249,6 +253,15 @@ export function SaveLocationForm({
             </div>
           </div>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>Visibility</Label>
+        <VisibilitySelector
+          value={visibility}
+          onChange={setVisibility}
+          disabled={isLoading}
+        />
       </div>
 
       {collections.length > 0 && (

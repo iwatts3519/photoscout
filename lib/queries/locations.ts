@@ -9,7 +9,7 @@ export async function getLocationsByUser(
 ) {
   const { data, error } = await supabase
     .from('locations')
-    .select('id, user_id, name, description, radius_meters, tags, is_public, created_at, updated_at, coordinates, collection_id, notes, best_time_to_visit, last_visited')
+    .select('id, user_id, name, description, radius_meters, tags, visibility, created_at, updated_at, coordinates, collection_id, notes, best_time_to_visit, last_visited, view_count, favorite_count')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
@@ -66,7 +66,7 @@ export async function getLocationsNearPoint(
 
 export async function saveLocation(
   supabase: SupabaseClient<Database>,
-  location: Omit<Location, 'id' | 'created_at' | 'updated_at'>
+  location: Omit<Location, 'id' | 'created_at' | 'updated_at' | 'view_count' | 'favorite_count'>
 ) {
   const { data, error } = await supabase
     .from('locations')

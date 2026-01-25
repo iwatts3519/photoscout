@@ -34,6 +34,106 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_history: {
+        Row: {
+          alert_rule_id: string
+          conditions_snapshot: Json
+          id: string
+          is_read: boolean | null
+          notification_channel: string | null
+          notification_sent: boolean | null
+          read_at: string | null
+          triggered_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_rule_id: string
+          conditions_snapshot: Json
+          id?: string
+          is_read?: boolean | null
+          notification_channel?: string | null
+          notification_sent?: boolean | null
+          read_at?: string | null
+          triggered_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_rule_id?: string
+          conditions_snapshot?: Json
+          id?: string
+          is_read?: boolean | null
+          notification_channel?: string | null
+          notification_sent?: boolean | null
+          read_at?: string | null
+          triggered_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_history_alert_rule_id_fkey"
+            columns: ["alert_rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alert_rules: {
+        Row: {
+          alert_type: string
+          conditions: Json
+          created_at: string | null
+          days_of_week: number[] | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          lead_time_minutes: number | null
+          location_id: string
+          name: string
+          time_window: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          conditions?: Json
+          created_at?: string | null
+          days_of_week?: number[] | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          lead_time_minutes?: number | null
+          location_id: string
+          name: string
+          time_window?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          conditions?: Json
+          created_at?: string | null
+          days_of_week?: number[] | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          lead_time_minutes?: number | null
+          location_id?: string
+          name?: string
+          time_window?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_rules_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collections: {
         Row: {
           color: string | null
@@ -67,6 +167,76 @@ export type Database = {
         }
         Relationships: []
       }
+      location_favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          location_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          location_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          location_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_favorites_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      location_reports: {
+        Row: {
+          created_at: string | null
+          details: string | null
+          id: string
+          location_id: string
+          reason: string
+          reporter_id: string
+          reviewed_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: string | null
+          id?: string
+          location_id: string
+          reason: string
+          reporter_id: string
+          reviewed_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: string | null
+          id?: string
+          location_id?: string
+          reason?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_reports_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           best_time_to_visit: string | null
@@ -74,8 +244,8 @@ export type Database = {
           coordinates: unknown
           created_at: string | null
           description: string | null
+          favorite_count: number | null
           id: string
-          is_public: boolean | null
           last_visited: string | null
           name: string
           notes: string | null
@@ -83,6 +253,8 @@ export type Database = {
           tags: string[] | null
           updated_at: string | null
           user_id: string
+          view_count: number | null
+          visibility: string | null
         }
         Insert: {
           best_time_to_visit?: string | null
@@ -90,8 +262,8 @@ export type Database = {
           coordinates: unknown
           created_at?: string | null
           description?: string | null
+          favorite_count?: number | null
           id?: string
-          is_public?: boolean | null
           last_visited?: string | null
           name: string
           notes?: string | null
@@ -99,6 +271,8 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string | null
           user_id: string
+          view_count?: number | null
+          visibility?: string | null
         }
         Update: {
           best_time_to_visit?: string | null
@@ -106,8 +280,8 @@ export type Database = {
           coordinates?: unknown
           created_at?: string | null
           description?: string | null
+          favorite_count?: number | null
           id?: string
-          is_public?: boolean | null
           last_visited?: string | null
           name?: string
           notes?: string | null
@@ -115,6 +289,8 @@ export type Database = {
           tags?: string[] | null
           updated_at?: string | null
           user_id?: string
+          view_count?: number | null
+          visibility?: string | null
         }
         Relationships: [
           {
@@ -125,6 +301,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_preferences: {
+        Row: {
+          cooldown_hours: number | null
+          created_at: string | null
+          id: string
+          in_app_enabled: boolean | null
+          max_notifications_per_day: number | null
+          notifications_enabled: boolean | null
+          push_enabled: boolean | null
+          quiet_hours_end: number | null
+          quiet_hours_start: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cooldown_hours?: number | null
+          created_at?: string | null
+          id?: string
+          in_app_enabled?: boolean | null
+          max_notifications_per_day?: number | null
+          notifications_enabled?: boolean | null
+          push_enabled?: boolean | null
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cooldown_hours?: number | null
+          created_at?: string | null
+          id?: string
+          in_app_enabled?: boolean | null
+          max_notifications_per_day?: number | null
+          notifications_enabled?: boolean | null
+          push_enabled?: boolean | null
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -150,6 +368,39 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          created_at: string | null
+          device_name: string | null
+          id: string
+          is_active: boolean | null
+          subscription: Json
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          subscription: Json
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          subscription?: Json
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -171,181 +422,6 @@ export type Database = {
           proj4text?: string | null
           srid?: number
           srtext?: string | null
-        }
-        Relationships: []
-      }
-      alert_rules: {
-        Row: {
-          id: string
-          user_id: string
-          location_id: string
-          name: string
-          alert_type: string
-          conditions: Json
-          time_window: Json | null
-          days_of_week: number[] | null
-          lead_time_minutes: number
-          is_active: boolean
-          last_triggered_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          location_id: string
-          name: string
-          alert_type: string
-          conditions?: Json
-          time_window?: Json | null
-          days_of_week?: number[] | null
-          lead_time_minutes?: number
-          is_active?: boolean
-          last_triggered_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          location_id?: string
-          name?: string
-          alert_type?: string
-          conditions?: Json
-          time_window?: Json | null
-          days_of_week?: number[] | null
-          lead_time_minutes?: number
-          is_active?: boolean
-          last_triggered_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "alert_rules_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      alert_history: {
-        Row: {
-          id: string
-          alert_rule_id: string
-          user_id: string
-          triggered_at: string
-          conditions_snapshot: Json
-          notification_sent: boolean
-          notification_channel: string | null
-          is_read: boolean
-          read_at: string | null
-        }
-        Insert: {
-          id?: string
-          alert_rule_id: string
-          user_id: string
-          triggered_at?: string
-          conditions_snapshot: Json
-          notification_sent?: boolean
-          notification_channel?: string | null
-          is_read?: boolean
-          read_at?: string | null
-        }
-        Update: {
-          id?: string
-          alert_rule_id?: string
-          user_id?: string
-          triggered_at?: string
-          conditions_snapshot?: Json
-          notification_sent?: boolean
-          notification_channel?: string | null
-          is_read?: boolean
-          read_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "alert_history_alert_rule_id_fkey"
-            columns: ["alert_rule_id"]
-            isOneToOne: false
-            referencedRelation: "alert_rules"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      push_subscriptions: {
-        Row: {
-          id: string
-          user_id: string
-          subscription: Json
-          user_agent: string | null
-          device_name: string | null
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          subscription: Json
-          user_agent?: string | null
-          device_name?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          subscription?: Json
-          user_agent?: string | null
-          device_name?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      notification_preferences: {
-        Row: {
-          id: string
-          user_id: string
-          notifications_enabled: boolean
-          push_enabled: boolean
-          in_app_enabled: boolean
-          quiet_hours_start: number | null
-          quiet_hours_end: number | null
-          max_notifications_per_day: number
-          cooldown_hours: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          notifications_enabled?: boolean
-          push_enabled?: boolean
-          in_app_enabled?: boolean
-          quiet_hours_start?: number | null
-          quiet_hours_end?: number | null
-          max_notifications_per_day?: number
-          cooldown_hours?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          notifications_enabled?: boolean
-          push_enabled?: boolean
-          in_app_enabled?: boolean
-          quiet_hours_start?: number | null
-          quiet_hours_end?: number | null
-          max_notifications_per_day?: number
-          cooldown_hours?: number
-          created_at?: string
-          updated_at?: string
         }
         Relationships: []
       }
@@ -522,6 +598,11 @@ export type Database = {
             }
             Returns: string
           }
+      check_is_favorited: { Args: { p_location_id: string }; Returns: boolean }
+      count_notifications_today: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -653,6 +734,27 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_location_with_coords: {
+        Args: { p_location_id: string }
+        Returns: {
+          best_time_to_visit: string
+          created_at: string
+          description: string
+          favorite_count: number
+          id: string
+          lat: number
+          lng: number
+          name: string
+          notes: string
+          owner_name: string
+          radius_meters: number
+          tags: string[]
+          updated_at: string
+          user_id: string
+          view_count: number
+          visibility: string
+        }[]
+      }
       get_locations_with_coords: {
         Args: { location_ids: string[] }
         Returns: {
@@ -661,7 +763,68 @@ export type Database = {
           lng: number
         }[]
       }
+      get_popular_tags: {
+        Args: { p_limit?: number }
+        Returns: {
+          count: number
+          tag: string
+        }[]
+      }
+      get_public_locations: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_sort_by?: string
+          p_tags?: string[]
+        }
+        Returns: {
+          best_time_to_visit: string
+          created_at: string
+          description: string
+          favorite_count: number
+          id: string
+          lat: number
+          lng: number
+          name: string
+          owner_name: string
+          radius_meters: number
+          tags: string[]
+          updated_at: string
+          user_id: string
+          view_count: number
+          visibility: string
+        }[]
+      }
+      get_user_favorites: {
+        Args: { p_limit?: number }
+        Returns: {
+          best_time_to_visit: string
+          created_at: string
+          description: string
+          favorite_count: number
+          favorited_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          owner_name: string
+          radius_meters: number
+          tags: string[]
+          updated_at: string
+          user_id: string
+          view_count: number
+          visibility: string
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
+      increment_location_view_count: {
+        Args: { p_location_id: string }
+        Returns: number
+      }
+      is_alert_in_cooldown: {
+        Args: { p_alert_rule_id: string; p_cooldown_hours: number }
+        Returns: boolean
+      }
       locations_near_point: {
         Args: { lat: number; lng: number; radius_meters: number }
         Returns: {
@@ -670,8 +833,8 @@ export type Database = {
           coordinates: unknown
           created_at: string | null
           description: string | null
+          favorite_count: number | null
           id: string
-          is_public: boolean | null
           last_visited: string | null
           name: string
           notes: string | null
@@ -679,6 +842,8 @@ export type Database = {
           tags: string[] | null
           updated_at: string | null
           user_id: string
+          view_count: number | null
+          visibility: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -1308,6 +1473,13 @@ export type Database = {
       st_wrapx: {
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
+      }
+      toggle_location_favorite: {
+        Args: { p_location_id: string }
+        Returns: {
+          is_favorited: boolean
+          new_count: number
+        }[]
       }
       unlockrows: { Args: { "": string }; Returns: number }
       updategeometrysrid: {

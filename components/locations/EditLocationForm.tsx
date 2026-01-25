@@ -11,8 +11,10 @@ import { updateLocationAction } from '@/app/actions/locations';
 import { useLocationStore } from '@/src/stores/locationStore';
 import { useCollectionStore } from '@/src/stores/collectionStore';
 import { CollectionSelector } from './CollectionSelector';
+import { VisibilitySelector } from './VisibilitySelector';
 import { toast } from 'sonner';
 import type { SavedLocation } from '@/src/stores/locationStore';
+import { type Visibility, isVisibility } from '@/src/types/community.types';
 
 const locationSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
@@ -60,6 +62,11 @@ export function EditLocationForm({
   const [collectionId, setCollectionId] = useState<string | null>(
     location.collection_id || null
   );
+  // Handle visibility from database - could be string or undefined
+  const initialVisibility = isVisibility((location as { visibility?: string }).visibility)
+    ? ((location as { visibility?: string }).visibility as Visibility)
+    : 'private';
+  const [visibility, setVisibility] = useState<Visibility>(initialVisibility);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -105,6 +112,7 @@ export function EditLocationForm({
         name: result.data.name,
         description: result.data.description || undefined,
         tags: tagArray.length > 0 ? tagArray : undefined,
+        visibility,
         collection_id: collectionId,
         notes: result.data.notes || undefined,
         best_time_to_visit: result.data.best_time_to_visit || undefined,
@@ -266,6 +274,15 @@ export function EditLocationForm({
         {errors.last_visited && (
           <p className="text-sm text-destructive">{errors.last_visited}</p>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>Visibility</Label>
+        <VisibilitySelector
+          value={visibility}
+          onChange={setVisibility}
+          disabled={isLoading}
+        />
       </div>
 
       {collections.length > 0 && (
