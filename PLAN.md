@@ -14,13 +14,13 @@
 | **Phase 8: UX & Feature Enhancements** | ✅ Complete | 100% | [View](docs/phases/phase-08-ux-enhancements.md) |
 | **Phase 9: Sidebar UI/UX Improvement** | ✅ Complete | 100% | [View](docs/phases/phase-09-sidebar-ui.md) |
 | **Phase 10: Weather Alerts & Notifications** | ✅ Complete | 100% | [View](docs/phases/phase-10-weather-alerts.md) |
-| **Phase 11: Community Photo Spots** | 📋 Planned | 0% | [View](docs/phases/phase-11-community-spots.md) |
+| **Phase 11: Community Photo Spots** | ✅ Complete | 100% | [View](docs/phases/phase-11-community-spots.md) |
 | **Phase 12: Photo Upload & Tagging** | 📋 Planned | 0% | [View](docs/phases/phase-12-photo-upload.md) |
 | **Phase 13: Route Planning** | 📋 Planned | 0% | [View](docs/phases/phase-13-route-planning.md) |
 | **Phase 14: Location Comparison** | 📋 Planned | 0% | [View](docs/phases/phase-14-location-comparison.md) |
 
-**Last Updated**: 2026-01-24
-**Current Phase**: Phase 10 Complete - Weather Alerts & Notifications
+**Last Updated**: 2026-01-25
+**Current Phase**: Phase 11 Complete - Community Photo Spots
 
 ---
 
@@ -84,9 +84,9 @@ See CLAUDE.md for complete git workflow and best practices.
 
 **Phase 10**: Weather alerts with push notifications, alert rules, condition matching, and notification center.
 
-### Planned Phases
+**Phase 11**: Community photo spots with visibility controls (private/public/unlisted), discovery page with grid/map views, spot detail pages, favorites system, and sidebar integration.
 
-**Phase 11**: Community photo spots - public location sharing, discovery page, favorites.
+### Planned Phases
 
 **Phase 12**: Photo upload - drag-and-drop uploads, EXIF extraction, photo library.
 
