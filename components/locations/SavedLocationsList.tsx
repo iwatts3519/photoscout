@@ -211,7 +211,7 @@ export function SavedLocationsList() {
         open={editingLocation !== null}
         onOpenChange={(open) => !open && setEditingLocation(null)}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Location</DialogTitle>
             <DialogDescription>
