@@ -14,8 +14,8 @@ import { Loader2 } from 'lucide-react';
  * Remove this component before production deployment
  */
 export function DevPasswordSignIn() {
-  const [email, setEmail] = useState('test@photoscout.com');
-  const [password, setPassword] = useState('Test123!@#');
+  const [email, setEmail] = useState('test@photoscout.local');
+  const [password, setPassword] = useState('testpassword123');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent) => {

@@ -27,6 +27,7 @@ import { useLocationStore } from '@/src/stores/locationStore';
 import { useMapStore } from '@/src/stores/mapStore';
 import { CollectionBadge } from './CollectionBadge';
 import { ShareLocationDialog } from './ShareLocationDialog';
+import { PhotoCountBadge } from '@/components/photos/PhotoCountBadge';
 import { copyToClipboard, formatCoordinates } from '@/lib/utils/export';
 import { toast } from 'sonner';
 import type { SavedLocation } from '@/src/stores/locationStore';
@@ -172,11 +173,12 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
             </p>
           )}
 
-          {location.collection_id && (
-            <div className="pl-6">
+          <div className="flex items-center gap-2 pl-6">
+            {location.collection_id && (
               <CollectionBadge collectionId={location.collection_id} />
-            </div>
-          )}
+            )}
+            <PhotoCountBadge locationId={location.id} />
+          </div>
 
           {/* Best time to visit */}
           {location.best_time_to_visit && (
