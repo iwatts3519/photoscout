@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { LocationCard } from './LocationCard';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPinned, Download, FileJson, FileText } from 'lucide-react';
+import { Loader2, MapPinned, Download, FileJson, FileText, BarChart3 } from 'lucide-react';
 import { fetchUserLocations } from '@/app/actions/locations';
 import { fetchUserCollections } from '@/app/actions/collections';
 import { useLocationStore } from '@/src/stores/locationStore';
@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { EditLocationForm } from './EditLocationForm';
 import { exportToJSON, exportToGPX, downloadFile, generateFilename } from '@/lib/utils/export';
+import { useComparisonStore } from '@/src/stores/comparisonStore';
+import { ComparisonSelectionBar } from '@/components/comparison/ComparisonSelectionBar';
 import type { SavedLocation } from '@/src/stores/locationStore';
 
 export function SavedLocationsList() {
@@ -40,6 +42,14 @@ export function SavedLocationsList() {
   const setCollections = useCollectionStore((state) => state.setCollections);
   const selectedCollectionId = useCollectionStore(
     (state) => state.selectedCollectionId
+  );
+
+  const isCompareMode = useComparisonStore((state) => state.isCompareMode);
+  const selectedLocationIds = useComparisonStore(
+    (state) => state.selectedLocationIds
+  );
+  const toggleCompareMode = useComparisonStore(
+    (state) => state.toggleCompareMode
   );
 
   const [editingLocation, setEditingLocation] = useState<SavedLocation | null>(
@@ -150,6 +160,17 @@ export function SavedLocationsList() {
             Saved ({filteredLocations.length})
           </h3>
           <div className="flex items-center gap-1">
+            {savedLocations.length >= 2 && (
+              <Button
+                variant={isCompareMode ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={toggleCompareMode}
+                className="h-7 text-xs"
+                title={isCompareMode ? 'Exit compare mode' : 'Compare locations'}
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+              </Button>
+            )}
             {collections.length > 0 && <CollectionFilter />}
             <CollectionManager />
             {savedLocations.length > 0 && (
@@ -186,6 +207,10 @@ export function SavedLocationsList() {
             </Button>
           </div>
         </div>
+
+        {(isCompareMode || selectedLocationIds.length > 0) && (
+          <ComparisonSelectionBar />
+        )}
 
         <div className="space-y-2">
           {filteredLocations.length === 0 ? (

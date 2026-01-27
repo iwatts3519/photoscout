@@ -14,6 +14,7 @@ import {
   FileText,
   Share2,
   Copy,
+  BarChart3,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -25,10 +26,12 @@ import {
 import { deleteLocationAction } from '@/app/actions/locations';
 import { useLocationStore } from '@/src/stores/locationStore';
 import { useMapStore } from '@/src/stores/mapStore';
+import { useComparisonStore } from '@/src/stores/comparisonStore';
 import { CollectionBadge } from './CollectionBadge';
 import { ShareLocationDialog } from './ShareLocationDialog';
 import { PhotoCountBadge } from '@/components/photos/PhotoCountBadge';
 import { copyToClipboard, formatCoordinates } from '@/lib/utils/export';
+import { parseCoordinates } from '@/lib/utils/parse-coordinates';
 import { toast } from 'sonner';
 import type { SavedLocation } from '@/src/stores/locationStore';
 
@@ -69,27 +72,20 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
   const setCenter = useMapStore((state) => state.setCenter);
   const setSelectedLocation = useMapStore((state) => state.setSelectedLocation);
   const setZoom = useMapStore((state) => state.setZoom);
+  const isCompareMode = useComparisonStore((state) => state.isCompareMode);
+  const selectedLocationIds = useComparisonStore(
+    (state) => state.selectedLocationIds
+  );
+  const toggleLocationSelection = useComparisonStore(
+    (state) => state.toggleLocationSelection
+  );
+  const addLocationToCompare = useComparisonStore(
+    (state) => state.addLocationToCompare
+  );
 
-  // Parse coordinates from PostGIS geography (stored as POINT(lng lat))
-  const parseCoordinates = (coords: unknown): { lat: number; lng: number } | null => {
-    if (typeof coords === 'string') {
-      // Format: "POINT(lng lat)" or "(lng,lat)"
-      const match = coords.match(/\(([^,\s]+)[,\s]+([^)]+)\)/);
-      if (match) {
-        return {
-          lng: parseFloat(match[1]),
-          lat: parseFloat(match[2]),
-        };
-      }
-    }
-
-    // If it's an object with lat/lng properties
-    if (coords && typeof coords === 'object' && 'lat' in coords && 'lng' in coords) {
-      return coords as { lat: number; lng: number };
-    }
-
-    return null;
-  };
+  const isSelectedForCompare = selectedLocationIds.includes(location.id);
+  const isCompareDisabled =
+    !isSelectedForCompare && selectedLocationIds.length >= 4;
 
   const coords = parseCoordinates(location.coordinates);
 
@@ -152,11 +148,24 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
   }
 
   return (
-    <Card className="p-4 hover:bg-accent/50 transition-colors">
+    <Card
+      className={`p-4 hover:bg-accent/50 transition-colors ${isSelectedForCompare ? 'ring-2 ring-primary/50' : ''}`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 space-y-2">
           <div className="flex items-start gap-2">
-            <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+            {isCompareMode ? (
+              <input
+                type="checkbox"
+                checked={isSelectedForCompare}
+                disabled={isCompareDisabled}
+                onChange={() => toggleLocationSelection(location.id)}
+                className="mt-1 h-4 w-4 rounded border-muted-foreground flex-shrink-0 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={`Select ${location.name} for comparison`}
+              />
+            ) : (
+              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+            )}
             <div className="flex-1 min-w-0">
               <h3 className="font-medium leading-tight truncate">
                 {location.name}
@@ -260,6 +269,13 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
             <DropdownMenuItem onClick={handleCopyCoordinates}>
               <Copy className="mr-2 h-4 w-4" />
               Copy Coordinates
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => addLocationToCompare(location.id)}
+              disabled={isSelectedForCompare || isCompareDisabled}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              {isSelectedForCompare ? 'In Comparison' : 'Add to Compare'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
