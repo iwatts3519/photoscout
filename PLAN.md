@@ -17,7 +17,7 @@
 | **Phase 11: Community Photo Spots** | ✅ Complete | 100% | [View](docs/phases/phase-11-community-spots.md) |
 | **Phase 12: Photo Upload & Tagging** | ✅ Complete | 100% | [View](docs/phases/phase-12-photo-upload.md) |
 | **Phase 13: Route Planning** | ✅ Complete | 100% | [View](docs/phases/phase-13-route-planning.md) |
-| **Phase 14: Location Comparison** | 🔄 In Progress | 80% | [View](docs/phases/phase-14-location-comparison.md) |
+| **Phase 14: Location Comparison** | ✅ Complete | 100% | [View](docs/phases/phase-14-location-comparison.md) |
 
 **Last Updated**: 2026-01-27
 **Current Phase**: Phase 14 - Location Comparison
@@ -86,13 +86,11 @@ See CLAUDE.md for complete git workflow and best practices.
 
 **Phase 11**: Community photo spots with visibility controls (private/public/unlisted), discovery page with grid/map views, spot detail pages, favorites system, and sidebar integration.
 
-### In Progress Phases
-
-**Phase 14**: Location comparison - selection UI, comparison page, mini maps, recommendation logic, quick compare from map. Build order: 14A → 14D → 14B → 14C → 14E.
-
-### Completed Recent Phases
+**Phase 12**: Photo upload and tagging with EXIF extraction, user photo gallery, and photo detail views.
 
 **Phase 13**: Route planning - All sub-phases complete (database schema, OpenRouteService API, Trip Planner UI, route map display, route optimization, trip export & sharing).
+
+**Phase 14**: Location comparison - selection UI, comparison page with side-by-side metrics, mini maps with sun position indicators, recommendation logic, and quick compare panel from main map.
 
 ---
 

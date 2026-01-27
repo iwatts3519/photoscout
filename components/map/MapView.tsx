@@ -18,6 +18,7 @@ import { FloatingLocationCard } from './FloatingLocationCard';
 import { POIBottomSheet } from '@/components/poi/POIBottomSheet';
 import { PhotosBottomSheet } from '@/components/photos/PhotosBottomSheet';
 import { ForecastBottomSheet } from '@/components/weather/ForecastBottomSheet';
+import { QuickComparePanel } from '@/components/comparison/QuickComparePanel';
 
 const MAP_STYLE = {
   version: 8,
@@ -199,6 +200,9 @@ export const MapView = React.memo(function MapView() {
       {/* Floating Cards Container */}
       <FloatingWeatherCard />
       <FloatingLocationCard />
+
+      {/* Quick Compare Panel */}
+      <QuickComparePanel />
 
       {/* Bottom Sheets */}
       <POIBottomSheet />
