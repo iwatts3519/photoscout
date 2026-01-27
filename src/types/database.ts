@@ -425,6 +425,117 @@ export type Database = {
         }
         Relationships: []
       }
+      trips: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_optimized: boolean | null
+          name: string
+          start_time: string | null
+          total_distance_meters: number | null
+          total_duration_seconds: number | null
+          transport_mode: string | null
+          trip_date: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_optimized?: boolean | null
+          name: string
+          start_time?: string | null
+          total_distance_meters?: number | null
+          total_duration_seconds?: number | null
+          transport_mode?: string | null
+          trip_date?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_optimized?: boolean | null
+          name?: string
+          start_time?: string | null
+          total_distance_meters?: number | null
+          total_duration_seconds?: number | null
+          transport_mode?: string | null
+          trip_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trip_stops: {
+        Row: {
+          created_at: string | null
+          custom_lat: number | null
+          custom_lng: number | null
+          custom_name: string | null
+          distance_to_next_meters: number | null
+          duration_to_next_seconds: number | null
+          id: string
+          location_id: string | null
+          notes: string | null
+          planned_arrival: string | null
+          planned_duration_minutes: number | null
+          route_geometry: Json | null
+          stop_order: number
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          custom_lat?: number | null
+          custom_lng?: number | null
+          custom_name?: string | null
+          distance_to_next_meters?: number | null
+          duration_to_next_seconds?: number | null
+          id?: string
+          location_id?: string | null
+          notes?: string | null
+          planned_arrival?: string | null
+          planned_duration_minutes?: number | null
+          route_geometry?: Json | null
+          stop_order: number
+          trip_id: string
+        }
+        Update: {
+          created_at?: string | null
+          custom_lat?: number | null
+          custom_lng?: number | null
+          custom_name?: string | null
+          distance_to_next_meters?: number | null
+          duration_to_next_seconds?: number | null
+          id?: string
+          location_id?: string | null
+          notes?: string | null
+          planned_arrival?: string | null
+          planned_duration_minutes?: number | null
+          route_geometry?: Json | null
+          stop_order?: number
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_stops_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_stops_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       geography_columns: {
@@ -1479,6 +1590,39 @@ export type Database = {
         Returns: {
           is_favorited: boolean
           new_count: number
+        }[]
+      }
+      reorder_trip_stops: {
+        Args: { p_trip_id: string; p_stop_ids: string[] }
+        Returns: undefined
+      }
+      get_trip_with_stops: {
+        Args: { p_trip_id: string }
+        Returns: {
+          trip_id: string
+          trip_name: string
+          trip_description: string | null
+          trip_date: string | null
+          start_time: string | null
+          transport_mode: string | null
+          total_distance_meters: number | null
+          total_duration_seconds: number | null
+          is_optimized: boolean | null
+          trip_created_at: string | null
+          trip_updated_at: string | null
+          stop_id: string | null
+          location_id: string | null
+          location_name: string | null
+          stop_custom_name: string | null
+          stop_lat: number | null
+          stop_lng: number | null
+          stop_order: number | null
+          planned_arrival: string | null
+          planned_duration_minutes: number | null
+          stop_notes: string | null
+          distance_to_next_meters: number | null
+          duration_to_next_seconds: number | null
+          route_geometry: Json | null
         }[]
       }
       unlockrows: { Args: { "": string }; Returns: number }

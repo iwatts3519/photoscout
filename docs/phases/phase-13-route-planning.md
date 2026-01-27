@@ -1,7 +1,7 @@
 # Phase 13: Route Planning
 
-**Status**: 📋 Planned
-**Completion**: 0%
+**Status**: 🔄 In Progress
+**Completion**: 50% (Phase 13A-13C Complete)
 
 ## Goal
 Enable photographers to plan multi-location shoots with route optimization, travel time estimates, and exportable itineraries.
@@ -16,110 +16,71 @@ Enable photographers to plan multi-location shoots with route optimization, trav
 
 ## Sub-Phases
 
-### Phase 13A: Trips Database Schema
+### Phase 13A: Trips Database Schema ✅
+
+**Status**: Complete
 
 **Goal**: Create data model for multi-location trips.
 
-**Database Schema**:
-```sql
-CREATE TABLE trips (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  description TEXT,
-  trip_date DATE,
-  start_time TIME,
-  transport_mode TEXT DEFAULT 'driving' CHECK (transport_mode IN ('driving', 'walking', 'cycling')),
-  total_distance_meters INTEGER,
-  total_duration_seconds INTEGER,
-  is_optimized BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+**Files Created**:
+- `supabase/migrations/20260127000001_add_trips.sql` - Migration with tables, RLS, and helper functions
+- `src/types/trips.types.ts` - TypeScript types and Zod schemas
+- `lib/queries/trips.ts` - Database query functions
+- `app/actions/trips.ts` - Server actions for trip management
 
-CREATE TABLE trip_stops (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
-  location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
-  custom_name TEXT,
-  custom_lat FLOAT,
-  custom_lng FLOAT,
-  stop_order INTEGER NOT NULL,
-  planned_arrival TIME,
-  planned_duration_minutes INTEGER DEFAULT 60,
-  notes TEXT,
-  distance_to_next_meters INTEGER,
-  duration_to_next_seconds INTEGER,
-  route_geometry JSONB,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX trip_stops_trip_id_idx ON trip_stops(trip_id);
-CREATE INDEX trip_stops_order_idx ON trip_stops(trip_id, stop_order);
-```
-
-**Files to Create**:
-- `supabase/migrations/20260123000001_add_trips.sql`
-- `src/types/trips.types.ts`
-- `lib/queries/trips.ts`
-- `app/actions/trips.ts`
+**Database Features**:
+- `trips` table with transport mode, date/time, and totals
+- `trip_stops` table with location references or custom coordinates
+- RLS policies for user data isolation
+- `reorder_trip_stops()` function for drag-to-reorder
+- `get_trip_with_stops()` function for fetching complete trip data
 
 ---
 
-### Phase 13B: OpenRouteService Integration
+### Phase 13B: OpenRouteService Integration ✅
+
+**Status**: Complete
 
 **Goal**: Integrate routing API for directions and travel times.
 
-**API Endpoints**:
-- `POST /v2/directions/{profile}` - Get route between points
-- Profiles: `driving-car`, `foot-walking`, `cycling-regular`
+**Files Created**:
+- `src/types/routing.types.ts` - API types, route types, polyline decoder, GeoJSON utilities
+- `lib/api/openrouteservice.ts` - API client with caching and error handling
+- `app/actions/routing.ts` - Server actions for route calculations
 
-**Files to Create**:
-- `lib/api/openrouteservice.ts` - API client
-- `src/types/routing.types.ts` - Route types
-- `app/actions/routing.ts` - Server actions
+**Features**:
+- Calculate routes between multiple coordinates
+- Support for driving, walking, and cycling profiles
+- Automatic route geometry in GeoJSON format
+- Cache routes for 1 hour
+- Trip route calculation with database updates
+- Travel time estimates to saved locations
 
 ---
 
-### Phase 13C: Trip Planner UI
+### Phase 13C: Trip Planner UI ✅
+
+**Status**: Complete
 
 **Goal**: Build interface for creating and editing trips.
 
-**UI Layout**:
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 🗺️ Plan Trip: Lake District Sunrise                    [✕]  │
-├─────────────────────────────────────────────────────────────┤
-│ Date: [📅 Jan 25, 2026]  Start: [05:00]  Mode: [🚗 Driving] │
-├──────────────────────────┬──────────────────────────────────┤
-│ Stops                    │                                  │
-│ ─────────────────────────│                                  │
-│ 1. 📍 Home               │         MAP                      │
-│    ↓ 45 min (32 km)      │    (shows route polyline)        │
-│ 2. 📍 Castlerigg Stone   │                                  │
-│    ⏱️ Stay: 1h 30m        │         ━━━━━━━                  │
-│    🌅 Golden: 07:15-07:52│            ╲                     │
-│    ↓ 20 min (15 km)      │             ╲                    │
-│ 3. 📍 Derwentwater       │              ●━━━●               │
-│    ⏱️ Stay: 2h           │                                  │
-│    ↓ 35 min (28 km)      │                                  │
-│ 4. 📍 Home               │                                  │
-│                          │                                  │
-│ [+ Add Stop]             │                                  │
-├──────────────────────────┴──────────────────────────────────┤
-│ Total: 4 stops • 75 km • 1h 40m driving • 3h 30m shooting   │
-├─────────────────────────────────────────────────────────────┤
-│ [Cancel]  [Optimize Route]  [Export GPX]  [Save Trip]       │
-└─────────────────────────────────────────────────────────────┘
-```
+**Files Created**:
+- `src/stores/tripPlannerStore.ts` - Zustand store for trip planning state
+- `components/trips/TripPlanner.tsx` - Main trip planning dialog
+- `components/trips/TripStopList.tsx` - Draggable stop list with route info
+- `components/trips/TripStopCard.tsx` - Individual stop card with edit/delete
+- `components/trips/AddStopDialog.tsx` - Dialog to add saved or custom locations
+- `components/trips/TripSummary.tsx` - Trip totals and estimated end time
+- `components/trips/index.ts` - Barrel export
 
-**Files to Create**:
-- `components/trips/TripPlanner.tsx`
-- `components/trips/TripStopList.tsx`
-- `components/trips/TripStopCard.tsx`
-- `components/trips/AddStopDialog.tsx`
-- `components/trips/TripSummary.tsx`
-- `src/stores/tripPlannerStore.ts`
+**Features**:
+- Create/edit trips with name, date, start time, transport mode
+- Add stops from saved locations or custom coordinates
+- Drag-to-reorder stops
+- Edit stop duration and notes
+- Calculate route with travel times between stops
+- Show trip summary (total distance, travel time, shooting time)
+- Unsaved changes detection with discard confirmation
 
 ---
 

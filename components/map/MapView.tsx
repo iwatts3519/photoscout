@@ -11,6 +11,8 @@ import { MapControls } from './MapControls';
 import { RadiusOverlay } from './RadiusOverlay';
 import { SavedLocationMarkers } from './SavedLocationMarkers';
 import { POILayer } from './POILayer';
+import { TripRouteLayer } from './TripRouteLayer';
+import { TripStopMarkers } from './TripStopMarkers';
 import { FloatingWeatherCard } from './FloatingWeatherCard';
 import { FloatingLocationCard } from './FloatingLocationCard';
 import { POIBottomSheet } from '@/components/poi/POIBottomSheet';
@@ -190,6 +192,9 @@ export const MapView = React.memo(function MapView() {
       />
 
       <POILayer map={mapInstance} />
+
+      <TripRouteLayer map={mapInstance} />
+      <TripStopMarkers map={mapInstance} />
 
       {/* Floating Cards Container */}
       <FloatingWeatherCard />

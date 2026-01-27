@@ -173,6 +173,7 @@ src/
 | Open-Meteo | No key required, unlimited non-commercial | Cache 30min |
 | Overpass | Be respectful | Cache 24hr |
 | Wikimedia | Generous | Cache 1hr |
+| OpenRouteService | 2000 req/day (free tier) | Cache 1hr |
 
 ## Key Patterns
 
@@ -196,9 +197,12 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+OPENROUTESERVICE_API_KEY=
 ```
 
-**Note**: Open-Meteo requires no API key for non-commercial use.
+**Notes**:
+- Open-Meteo requires no API key for non-commercial use.
+- OpenRouteService free tier: 2000 requests/day. Get key at https://openrouteservice.org/dev/#/signup
 
 ## Important Reminders
 1. **ALWAYS typecheck** after code changes

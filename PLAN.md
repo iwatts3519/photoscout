@@ -16,11 +16,11 @@
 | **Phase 10: Weather Alerts & Notifications** | ✅ Complete | 100% | [View](docs/phases/phase-10-weather-alerts.md) |
 | **Phase 11: Community Photo Spots** | ✅ Complete | 100% | [View](docs/phases/phase-11-community-spots.md) |
 | **Phase 12: Photo Upload & Tagging** | ✅ Complete | 100% | [View](docs/phases/phase-12-photo-upload.md) |
-| **Phase 13: Route Planning** | 📋 Planned | 0% | [View](docs/phases/phase-13-route-planning.md) |
+| **Phase 13: Route Planning** | 🔄 In Progress | 50% | [View](docs/phases/phase-13-route-planning.md) |
 | **Phase 14: Location Comparison** | 📋 Planned | 0% | [View](docs/phases/phase-14-location-comparison.md) |
 
 **Last Updated**: 2026-01-26
-**Current Phase**: Phase 12 Complete - Photo Upload & Tagging
+**Current Phase**: Phase 13C Complete - Trip Planner UI
 
 ---
 
@@ -86,11 +86,11 @@ See CLAUDE.md for complete git workflow and best practices.
 
 **Phase 11**: Community photo spots with visibility controls (private/public/unlisted), discovery page with grid/map views, spot detail pages, favorites system, and sidebar integration.
 
+### In Progress Phases
+
+**Phase 13**: Route planning - Phase 13A-C complete (database schema, OpenRouteService API integration, Trip Planner UI). Next: Route Display on Map.
+
 ### Planned Phases
-
-**Phase 12**: Photo upload - drag-and-drop uploads, EXIF extraction, photo library.
-
-**Phase 13**: Route planning - multi-stop trips, route optimization, GPX export.
 
 **Phase 14**: Location comparison - side-by-side weather/conditions, recommendations.
 
