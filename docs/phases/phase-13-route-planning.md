@@ -1,7 +1,7 @@
 # Phase 13: Route Planning
 
 **Status**: 🔄 In Progress
-**Completion**: 50% (Phase 13A-13C Complete)
+**Completion**: 80% (Phase 13A-13E Complete)
 
 ## Goal
 Enable photographers to plan multi-location shoots with route optimization, travel time estimates, and exportable itineraries.
@@ -84,24 +84,39 @@ Enable photographers to plan multi-location shoots with route optimization, trav
 
 ---
 
-### Phase 13D: Route Display on Map
+### Phase 13D: Route Display on Map ✅
+
+**Status**: Complete
 
 **Goal**: Show planned route on the map with markers and polyline.
 
-**Files to Create**:
+**Files Created**:
 - `components/map/TripRouteLayer.tsx`
 - `components/map/TripStopMarkers.tsx`
 - `lib/utils/route-geometry.ts` - GeoJSON utilities
 
 ---
 
-### Phase 13E: Route Optimization
+### Phase 13E: Route Optimization ✅
 
-**Goal**: Suggest optimal stop order to minimize travel time.
+**Status**: Complete
 
-**Files to Create**:
-- `lib/trips/route-optimizer.ts`
-- `components/trips/OptimizationDialog.tsx`
+**Goal**: Suggest optimal stop order to minimize travel distance.
+
+**Files Created**:
+- `lib/trips/route-optimizer.ts` - NN + 2-opt optimization (client-side, Haversine distance)
+- `components/trips/OptimizationDialog.tsx` - Before/after comparison dialog
+
+**Files Modified**:
+- `src/stores/tripPlannerStore.ts` - Added `setStopsOrder()` action for batch reordering
+- `components/trips/TripPlanner.tsx` - Added "Optimize" button and dialog integration
+
+**Features**:
+- Nearest-neighbor heuristic + 2-opt refinement for stop ordering
+- First stop fixed by default (photographer's starting point)
+- Before/after distance comparison with improvement percentage
+- Auto-recalculates routed distance after applying optimization
+- Button visible only when trip has 3+ stops
 
 ---
 
