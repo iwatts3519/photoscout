@@ -30,7 +30,6 @@ function getScoreBadgeColor(recommendation: string): string {
 
 export function QuickComparePanel() {
   const router = useRouter();
-  const savedLocations = useLocationStore((state) => state.savedLocations);
   const selectedLocationIds = useComparisonStore((state) => state.selectedLocationIds);
   const isCompareMode = useComparisonStore((state) => state.isCompareMode);
   const exitCompareMode = useComparisonStore((state) => state.exitCompareMode);
@@ -43,6 +42,10 @@ export function QuickComparePanel() {
 
   const loadData = useCallback(async () => {
     if (selectedLocationIds.length < 2) return;
+
+    // Read savedLocations from store at call time to avoid stale closure
+    // and prevent infinite re-renders from array reference changes
+    const savedLocations = useLocationStore.getState().savedLocations;
 
     // Resolve locations
     const resolved = selectedLocationIds
@@ -135,7 +138,7 @@ export function QuickComparePanel() {
     );
     setComparisonResult({ ...result, recommendation, tradeoffs });
     setIsLoading(false);
-  }, [selectedLocationIds, savedLocations]);
+  }, [selectedLocationIds]);
 
   useEffect(() => {
     if (shouldShow) {
