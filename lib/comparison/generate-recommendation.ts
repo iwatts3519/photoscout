@@ -53,8 +53,7 @@ export function generateRecommendation(
   // Generate tradeoffs: categories where the overall winner did NOT win
   const tradeoffs = buildTradeoffs(
     overallWinner.id,
-    categoryWinners,
-    totalCategories
+    categoryWinners
   );
 
   return { recommendation, tradeoffs };
@@ -102,7 +101,7 @@ function buildRecommendationText(
 
   if (winnerWins > 0 && winRatio < 0.6) {
     // Close call - find the runner up
-    const runnerUp = findRunnerUp(winner.id, categoryWinners, totalCategories);
+    const runnerUp = findRunnerUp(winner.id, categoryWinners);
     const runnerUpText = runnerUp
       ? ` over ${runnerUp.name}`
       : '';
@@ -122,8 +121,7 @@ function buildRecommendationText(
  */
 function findRunnerUp(
   winnerId: string,
-  categoryWinners: ComparisonResult['categoryWinners'],
-  _totalCategories: number
+  categoryWinners: ComparisonResult['categoryWinners']
 ): { id: string; name: string } | null {
   const nonOverall = categoryWinners.filter(
     (w) => w.category !== 'overall' && w.winnerId !== winnerId
@@ -159,8 +157,7 @@ function findRunnerUp(
  */
 function buildTradeoffs(
   winnerId: string,
-  categoryWinners: ComparisonResult['categoryWinners'],
-  _totalCategories: number
+  categoryWinners: ComparisonResult['categoryWinners']
 ): string[] {
   const lostCategories = categoryWinners.filter(
     (w) => w.category !== 'overall' && w.winnerId !== winnerId
