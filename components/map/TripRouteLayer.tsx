@@ -25,46 +25,57 @@ export function TripRouteLayer({ map }: TripRouteLayerProps) {
 
     const showRoute = isOpen && routeCalculation;
 
+    function removeRoute() {
+      try {
+        if (map!.getLayer(LAYER_ID)) map!.removeLayer(LAYER_ID);
+        if (map!.getSource(SOURCE_ID)) map!.removeSource(SOURCE_ID);
+      } catch {
+        // Map style may not be loaded yet or already destroyed
+      }
+    }
+
+    function applyRoute() {
+      if (!routeCalculation) return;
+      const geojson = routeToGeoJSON(routeCalculation);
+
+      if (!map!.getSource(SOURCE_ID)) {
+        map!.addSource(SOURCE_ID, {
+          type: 'geojson',
+          data: geojson,
+        });
+
+        map!.addLayer({
+          id: LAYER_ID,
+          type: 'line',
+          source: SOURCE_ID,
+          paint: {
+            'line-color': '#7c3aed',
+            'line-width': 4,
+            'line-opacity': 0.85,
+          },
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+        });
+      } else {
+        const source = map!.getSource(SOURCE_ID);
+        if (source && source.type === 'geojson') {
+          (source as maplibregl.GeoJSONSource).setData(geojson);
+        }
+      }
+    }
+
     if (!showRoute) {
-      // Remove layer and source when route is cleared or planner closed
-      if (map.getLayer(LAYER_ID)) {
-        map.removeLayer(LAYER_ID);
-      }
-      if (map.getSource(SOURCE_ID)) {
-        map.removeSource(SOURCE_ID);
-      }
+      removeRoute();
       return;
     }
 
-    const geojson = routeToGeoJSON(routeCalculation);
-
-    if (!map.getSource(SOURCE_ID)) {
-      // Add source and layer
-      map.addSource(SOURCE_ID, {
-        type: 'geojson',
-        data: geojson,
-      });
-
-      map.addLayer({
-        id: LAYER_ID,
-        type: 'line',
-        source: SOURCE_ID,
-        paint: {
-          'line-color': '#7c3aed',
-          'line-width': 4,
-          'line-opacity': 0.85,
-        },
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
-        },
-      });
+    if (map.isStyleLoaded()) {
+      applyRoute();
     } else {
-      // Update existing source data
-      const source = map.getSource(SOURCE_ID);
-      if (source && source.type === 'geojson') {
-        (source as maplibregl.GeoJSONSource).setData(geojson);
-      }
+      map.once('styledata', applyRoute);
+      return () => { map.off('styledata', applyRoute); };
     }
   }, [map, routeCalculation, isOpen]);
 
