@@ -40,6 +40,7 @@ import {
   Calendar,
   Clock,
   Sparkles,
+  Share2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -47,6 +48,7 @@ import { TripStopList } from './TripStopList';
 import { TripSummary } from './TripSummary';
 import { AddStopDialog } from './AddStopDialog';
 import { OptimizationDialog } from './OptimizationDialog';
+import { TripExportDialog } from './TripExportDialog';
 import {
   useTripPlannerStore,
   useIsTripPlannerOpen,
@@ -58,9 +60,10 @@ import {
   createTripAction,
   updateTripAction,
   addTripStopAction,
+  fetchTripWithStops,
 } from '@/app/actions/trips';
 import { calculateTripRouteAction } from '@/app/actions/routing';
-import { TRANSPORT_MODE_INFO, type TransportMode } from '@/src/types/trips.types';
+import { TRANSPORT_MODE_INFO, type TransportMode, type TripWithStops } from '@/src/types/trips.types';
 
 export function TripPlanner() {
   const isOpen = useIsTripPlannerOpen();
@@ -83,6 +86,8 @@ export function TripPlanner() {
   const [isSaving, setIsSaving] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [showOptimizationDialog, setShowOptimizationDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportTrip, setExportTrip] = useState<TripWithStops | null>(null);
 
   const isNewTrip = !currentTrip?.id;
 
@@ -138,6 +143,14 @@ export function TripPlanner() {
     if (currentTrip?.id) {
       handleCalculateRoute();
     }
+  };
+
+  // Open export/share dialog
+  const handleOpenExport = async () => {
+    if (!currentTrip?.id) return;
+    const { data } = await fetchTripWithStops(currentTrip.id);
+    setExportTrip(data);
+    setShowExportDialog(true);
   };
 
   // Save trip
@@ -377,6 +390,15 @@ export function TripPlanner() {
               </Button>
 
               <div className="flex items-center gap-2">
+                {!isNewTrip && (
+                  <Button
+                    variant="outline"
+                    onClick={handleOpenExport}
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                )}
                 <Button
                   onClick={handleSave}
                   disabled={isSaving || !currentTrip?.name.trim()}
@@ -425,6 +447,13 @@ export function TripPlanner() {
         open={showOptimizationDialog}
         onOpenChange={setShowOptimizationDialog}
         onApply={handleApplyOptimization}
+      />
+
+      {/* Export/Share Dialog */}
+      <TripExportDialog
+        trip={exportTrip}
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
       />
     </>
   );

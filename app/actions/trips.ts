@@ -244,6 +244,40 @@ export async function deleteTripAction(tripId: string): Promise<{
   }
 }
 
+/**
+ * Fetch a trip with stops for the share page (auth required, owner only)
+ */
+export async function fetchTripForShare(tripId: string): Promise<{
+  data: TripWithStops | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { data: null, error: 'You must be signed in to view this trip' };
+    }
+
+    const trip = await getTripWithStops(supabase, tripId);
+    if (!trip) {
+      return { data: null, error: 'Trip not found' };
+    }
+
+    return { data: trip, error: null };
+  } catch (error) {
+    console.error('Error fetching trip for share:', error);
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : 'Failed to fetch trip',
+    };
+  }
+}
+
 // ============================================================================
 // Trip Stop Actions
 // ============================================================================
