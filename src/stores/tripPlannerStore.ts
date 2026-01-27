@@ -77,6 +77,7 @@ interface TripPlannerState {
   updateStop: (id: string, updates: Partial<DraftStop>) => void;
   removeStop: (id: string) => void;
   reorderStops: (fromIndex: number, toIndex: number) => void;
+  setStopsOrder: (orderedStops: DraftStop[]) => void;
 
   // Actions - Dialog states
   openAddStopDialog: () => void;
@@ -299,6 +300,20 @@ export const useTripPlannerStore = create<TripPlannerState>((set) => ({
         },
         hasUnsavedChanges: true,
         routeCalculation: null, // Clear route when stops reordered
+      };
+    }),
+
+  setStopsOrder: (orderedStops) =>
+    set((state) => {
+      if (!state.currentTrip) return state;
+
+      return {
+        currentTrip: {
+          ...state.currentTrip,
+          stops: orderedStops,
+        },
+        hasUnsavedChanges: true,
+        routeCalculation: null,
       };
     }),
 

@@ -39,12 +39,14 @@ import {
   Calculator,
   Calendar,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { TripStopList } from './TripStopList';
 import { TripSummary } from './TripSummary';
 import { AddStopDialog } from './AddStopDialog';
+import { OptimizationDialog } from './OptimizationDialog';
 import {
   useTripPlannerStore,
   useIsTripPlannerOpen,
@@ -76,9 +78,11 @@ export function TripPlanner() {
   const isCalculatingRoute = useTripPlannerStore((state) => state.isCalculatingRoute);
   const addUserTrip = useTripPlannerStore((state) => state.addUserTrip);
   const resetChanges = useTripPlannerStore((state) => state.resetChanges);
+  const setStopsOrder = useTripPlannerStore((state) => state.setStopsOrder);
 
   const [isSaving, setIsSaving] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+  const [showOptimizationDialog, setShowOptimizationDialog] = useState(false);
 
   const isNewTrip = !currentTrip?.id;
 
@@ -121,6 +125,18 @@ export function TripPlanner() {
       toast.error('Failed to calculate route');
     } finally {
       setIsCalculatingRoute(false);
+    }
+  };
+
+  // Apply optimization result
+  const handleApplyOptimization = (newOrder: number[]) => {
+    const reordered = newOrder.map((idx) => stops[idx]);
+    setStopsOrder(reordered);
+    setShowOptimizationDialog(false);
+    toast.success('Route optimized', { description: 'Recalculating route...' });
+    // Auto-recalculate if trip is saved
+    if (currentTrip?.id) {
+      handleCalculateRoute();
     }
   };
 
@@ -311,26 +327,39 @@ export function TripPlanner() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium">Stops</h3>
-                    {stops.length >= 2 && currentTrip?.id && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCalculateRoute}
-                        disabled={isCalculatingRoute}
-                      >
-                        {isCalculatingRoute ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Calculating...
-                          </>
-                        ) : (
-                          <>
-                            <Calculator className="h-4 w-4 mr-2" />
-                            Calculate Route
-                          </>
-                        )}
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {stops.length >= 3 && currentTrip?.id && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowOptimizationDialog(true)}
+                          disabled={isCalculatingRoute}
+                        >
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Optimize
+                        </Button>
+                      )}
+                      {stops.length >= 2 && currentTrip?.id && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCalculateRoute}
+                          disabled={isCalculatingRoute}
+                        >
+                          {isCalculatingRoute ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Calculating...
+                            </>
+                          ) : (
+                            <>
+                              <Calculator className="h-4 w-4 mr-2" />
+                              Calculate Route
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <TripStopList />
@@ -390,6 +419,13 @@ export function TripPlanner() {
 
       {/* Add Stop Dialog */}
       <AddStopDialog />
+
+      {/* Optimization Dialog */}
+      <OptimizationDialog
+        open={showOptimizationDialog}
+        onOpenChange={setShowOptimizationDialog}
+        onApply={handleApplyOptimization}
+      />
     </>
   );
 }
