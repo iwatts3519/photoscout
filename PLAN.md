@@ -17,7 +17,7 @@
 | **Phase 11: Community Photo Spots** | ✅ Complete | 100% | [View](docs/phases/phase-11-community-spots.md) |
 | **Phase 12: Photo Upload & Tagging** | ✅ Complete | 100% | [View](docs/phases/phase-12-photo-upload.md) |
 | **Phase 13: Route Planning** | ✅ Complete | 100% | [View](docs/phases/phase-13-route-planning.md) |
-| **Phase 14: Location Comparison** | 🔄 In Progress | 0% | [View](docs/phases/phase-14-location-comparison.md) |
+| **Phase 14: Location Comparison** | 🔄 In Progress | 80% | [View](docs/phases/phase-14-location-comparison.md) |
 
 **Last Updated**: 2026-01-27
 **Current Phase**: Phase 14 - Location Comparison

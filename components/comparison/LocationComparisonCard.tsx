@@ -12,6 +12,8 @@ import {
   Sun,
   Thermometer,
 } from 'lucide-react';
+import { MiniMap } from './MiniMap';
+import { SunPositionIndicator } from './SunPositionIndicator';
 import { useMapStore } from '@/src/stores/mapStore';
 import { useRouter } from 'next/navigation';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -126,6 +128,18 @@ export function LocationComparisonCard({
         >
           <X className="h-4 w-4" />
         </Button>
+      </div>
+
+      {/* Mini Map with Sun Position */}
+      <div className="relative">
+        <MiniMap lat={coordinates.lat} lng={coordinates.lng} />
+        {comparison.photographyConditions?.sunAzimuth != null && (
+          <div className="absolute top-1 right-1">
+            <SunPositionIndicator
+              azimuthDegrees={comparison.photographyConditions.sunAzimuth}
+            />
+          </div>
+        )}
       </div>
 
       {/* Photography Score */}
