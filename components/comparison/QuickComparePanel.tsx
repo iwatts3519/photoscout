@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, ArrowRight, Trophy, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,114 +40,117 @@ export function QuickComparePanel() {
 
   const shouldShow = isCompareMode && selectedLocationIds.length >= 2;
 
-  const loadData = useCallback(async () => {
-    if (selectedLocationIds.length < 2) return;
-
-    // Read savedLocations from store at call time to avoid stale closure
-    // and prevent infinite re-renders from array reference changes
-    const savedLocations = useLocationStore.getState().savedLocations;
-
-    // Resolve locations
-    const resolved = selectedLocationIds
-      .map((id) => {
-        const loc = savedLocations.find((sl) => sl.id === id);
-        if (!loc) return null;
-        const coords = parseCoordinates(loc.coordinates);
-        if (!coords) return null;
-        return { location: loc, coordinates: coords };
-      })
-      .filter(
-        (item): item is {
-          location: (typeof savedLocations)[number];
-          coordinates: { lat: number; lng: number };
-        } => item !== null
-      );
-
-    if (resolved.length < 2) return;
-
-    setIsLoading(true);
-
-    const now = new Date();
-
-    // Fetch weather in parallel
-    const weatherResults = await Promise.allSettled(
-      resolved.map(({ coordinates }) =>
-        fetchWeatherForecast(coordinates.lat, coordinates.lng)
-      )
-    );
-
-    const finalLocations: ComparisonLocation[] = resolved.map(
-      ({ location, coordinates }, index) => {
-        const weatherResult = weatherResults[index];
-
-        let weather = null;
-        let error: string | null = null;
-
-        if (weatherResult.status === 'fulfilled') {
-          if (weatherResult.value.data) {
-            weather = weatherResult.value.data;
-          } else {
-            error = weatherResult.value.error ?? 'Failed to fetch weather';
-          }
-        } else {
-          error = 'Weather request failed';
-        }
-
-        let photographyConditions = null;
-        let photographyScore = null;
-        let sunTimes = null;
-
-        try {
-          photographyConditions = getPhotographyConditions(
-            now,
-            coordinates.lat,
-            coordinates.lng
-          );
-          sunTimes = getSunTimes(now, coordinates.lat, coordinates.lng);
-
-          if (weather) {
-            const photoWeather = adaptWeatherForPhotography(weather.current);
-            photographyScore = calculatePhotographyScore(
-              photographyConditions,
-              photoWeather
-            );
-          }
-        } catch {
-          // Sun calculations can fail for extreme latitudes
-        }
-
-        return {
-          location,
-          coordinates,
-          weather,
-          photographyScore,
-          photographyConditions,
-          sunTimes,
-          isLoading: false,
-          error,
-        };
-      }
-    );
-
-    setComparisonLocations(finalLocations);
-
-    const result = compareLocations(finalLocations);
-    const { recommendation, tradeoffs } = generateRecommendation(
-      finalLocations,
-      result
-    );
-    setComparisonResult({ ...result, recommendation, tradeoffs });
-    setIsLoading(false);
-  }, [selectedLocationIds]);
+  // Use a primitive string as effect dependency to avoid array reference issues
+  const idsKey = selectedLocationIds.join(',');
 
   useEffect(() => {
-    if (shouldShow) {
-      loadData();
-    } else {
-      setComparisonLocations([]);
-      setComparisonResult(null);
+    if (!shouldShow) return;
+
+    let cancelled = false;
+
+    async function loadData() {
+      const ids = idsKey.split(',');
+      const savedLocations = useLocationStore.getState().savedLocations;
+
+      const resolved = ids
+        .map((id) => {
+          const loc = savedLocations.find((sl) => sl.id === id);
+          if (!loc) return null;
+          const coords = parseCoordinates(loc.coordinates);
+          if (!coords) return null;
+          return { location: loc, coordinates: coords };
+        })
+        .filter(
+          (item): item is {
+            location: (typeof savedLocations)[number];
+            coordinates: { lat: number; lng: number };
+          } => item !== null
+        );
+
+      if (resolved.length < 2) return;
+
+      if (!cancelled) setIsLoading(true);
+
+      const now = new Date();
+
+      const weatherResults = await Promise.allSettled(
+        resolved.map(({ coordinates }) =>
+          fetchWeatherForecast(coordinates.lat, coordinates.lng)
+        )
+      );
+
+      if (cancelled) return;
+
+      const finalLocations: ComparisonLocation[] = resolved.map(
+        ({ location, coordinates }, index) => {
+          const weatherResult = weatherResults[index];
+
+          let weather = null;
+          let error: string | null = null;
+
+          if (weatherResult.status === 'fulfilled') {
+            if (weatherResult.value.data) {
+              weather = weatherResult.value.data;
+            } else {
+              error = weatherResult.value.error ?? 'Failed to fetch weather';
+            }
+          } else {
+            error = 'Weather request failed';
+          }
+
+          let photographyConditions = null;
+          let photographyScore = null;
+          let sunTimes = null;
+
+          try {
+            photographyConditions = getPhotographyConditions(
+              now,
+              coordinates.lat,
+              coordinates.lng
+            );
+            sunTimes = getSunTimes(now, coordinates.lat, coordinates.lng);
+
+            if (weather) {
+              const photoWeather = adaptWeatherForPhotography(weather.current);
+              photographyScore = calculatePhotographyScore(
+                photographyConditions,
+                photoWeather
+              );
+            }
+          } catch {
+            // Sun calculations can fail for extreme latitudes
+          }
+
+          return {
+            location,
+            coordinates,
+            weather,
+            photographyScore,
+            photographyConditions,
+            sunTimes,
+            isLoading: false,
+            error,
+          };
+        }
+      );
+
+      setComparisonLocations(finalLocations);
+
+      const result = compareLocations(finalLocations);
+      const { recommendation, tradeoffs } = generateRecommendation(
+        finalLocations,
+        result
+      );
+      setComparisonResult({ ...result, recommendation, tradeoffs });
+      setIsLoading(false);
     }
-  }, [shouldShow, loadData]);
+
+    loadData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldShow, idsKey]);
 
   if (!shouldShow) return null;
 
