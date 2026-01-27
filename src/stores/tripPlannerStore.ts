@@ -361,8 +361,12 @@ export const useTripPlannerStore = create<TripPlannerState>((set) => ({
 // Selector Hooks
 // ============================================================================
 
+// Stable empty array to avoid infinite re-renders when currentTrip is null.
+// Zustand uses Object.is equality — `[] !== []` would trigger re-render loops.
+const EMPTY_STOPS: DraftStop[] = [];
+
 export const useCurrentTrip = () => useTripPlannerStore((state) => state.currentTrip);
-export const useTripStops = () => useTripPlannerStore((state) => state.currentTrip?.stops ?? []);
+export const useTripStops = () => useTripPlannerStore((state) => state.currentTrip?.stops ?? EMPTY_STOPS);
 export const useIsTripPlannerOpen = () => useTripPlannerStore((state) => state.isOpen);
 export const useHasUnsavedChanges = () => useTripPlannerStore((state) => state.hasUnsavedChanges);
 export const useRouteCalculation = () => useTripPlannerStore((state) => state.routeCalculation);
